@@ -11,10 +11,11 @@ module.exports = {
     "json",
     "node",
   ],
-  testRegex: '(/src/.*|(\\.|/)(test|spec))\\.(ts|js)x?$',
-  coverageDirectory: 'coverage',
-  collectCoverageFrom: [
-    'src/**/*.{ts,tsx,js,jsx}',
-    '!src/**/*.d.ts',
+  testEnvironment: 'node',
+  testMatch: [
+    "<rootDir>/src/**/*.test.ts",
   ],
+  testTimeout: 25000,
+  coverageDirectory: 'coverage',
+  collectCoverage: false,
 };
