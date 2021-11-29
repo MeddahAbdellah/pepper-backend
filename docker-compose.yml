@@ -1,0 +1,23 @@
+x-aliases:
+  - &pg_envs
+    POSTGRES_DB: wellinjob
+    POSTGRES_USER: pepper
+    POSTGRES_PASSWORD: safennar
+  
+version: '3.7'
+
+services:
+  
+  db:
+    image: postgres:11-alpine
+    restart: always
+    environment:
+      <<: *pg_envs
+    ports:
+      - "127.0.0.1:5439:5432"
+    volumes:
+      - pgdata-11:/var/lib/postgresql/data
+    command: ["postgres", "-c", "log_min_duration_statement=200", "-c", "log_line_prefix=%t %a %p "]
+
+volumes:
+  pgdata-11:

@@ -32,8 +32,8 @@
     "lint": "npx eslint . --ext .ts,.tsx",
     "test": "npx jest --coverage -v",
     "test:watch": "npx jest --watch -v",
-    "serve": "concurrently -k -n \"Typescript,Node\" -p \"[{name}]\" -c \"blue,green\" \"npm run build:watch\" \"npm run start:watch\"",
-    "serve:prod": "concurrently -k -n \"Typescript\" -p \"[{name}]\" -c \"blue\" \"npm run build\" && concurrently -k -n \"Node\" -p \"[{name}]\" -c \"green\" \"npm run start:watch\""
+    "serve": "npx concurrently -k -n \"Typescript,Node\" -p \"[{name}]\" -c \"blue,green\" \"npm run build:watch\" \"npm run start:watch\"",
+    "serve:prod": "npx concurrently -k -n \"Typescript\" -p \"[{name}]\" -c \"blue\" \"npm run build\" && concurrently -k -n \"Node\" -p \"[{name}]\" -c \"green\" \"npm run start:watch\""
   },
   "author": "Jakub Synowiec <jsynowiec@users.noreply.github.com>",
   "license": "Apache-2.0",
