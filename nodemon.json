@@ -1,0 +1,7 @@
+{
+  "watch": "build",
+  "ext": "ts,js,json",
+  "ignore": ["node_modules"],
+  "exec": "npm run start",
+  "restartable": "rs"
+}

@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "baseUrl": "src",
+    "experimentalDecorators": true,
     "target": "es6",
     "module": "commonjs",
     "moduleResolution": "node",
@@ -18,8 +20,9 @@
     "strictFunctionTypes": true,
     "allowUnreachableCode": false,
     "strict": true,
+    "esModuleInterop": true,
   },
   "include": [
     "src/**/*",
-  ]
+  ],
 }
