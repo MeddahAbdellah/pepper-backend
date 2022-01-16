@@ -1,8 +1,8 @@
 import express, { Router } from 'express';
-import { OrganizerController } from 'services/organizer/organizer.controller';
+import { UserController } from 'services/user/user.controller';
 import { checkParametersAndCallRoute } from 'helpers/helpers';
 
-class OrganizerRoutes {
+class UserRoutes {
   public _router: Router = express.Router();
 
   public build() {
@@ -11,8 +11,8 @@ class OrganizerRoutes {
   }
 
   private _assignRoute() {
-    this._router.route('/login').post(checkParametersAndCallRoute(OrganizerController.login));
+    this._router.route('/login').post(checkParametersAndCallRoute(UserController.login));
   }
 }
 
-export default new OrganizerRoutes().build();
+export default new UserRoutes().build();

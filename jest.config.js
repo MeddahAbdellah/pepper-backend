@@ -15,6 +15,7 @@ module.exports = {
   testMatch: [
     "<rootDir>/src/**/*.test.ts",
   ],
+  modulePaths: ["<rootDir>/src"],
   testTimeout: 25000,
   coverageDirectory: 'coverage',
   collectCoverage: false,

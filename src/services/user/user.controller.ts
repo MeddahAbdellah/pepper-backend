@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import Joi from 'joi';
 import { validation } from 'helpers/helpers';
 
-export class OrganizerController {
+export class UserController {
   @validation(Joi.object({
     body: Joi.object({
       phoneNumber: Joi.string().required(),

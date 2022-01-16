@@ -1,4 +1,3 @@
-console.log("Server loading...");
 import express from 'express';
 import bodyParser from 'body-parser';
 import https from 'https';
@@ -8,9 +7,6 @@ const app = express();
 
 const httpServer = https.createServer(app);
 
-
-app.use(express.static("public"));
-app.set('view engine', 'ejs');
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({
   extended: false
@@ -30,3 +26,5 @@ app.use('/api/', routes);
 httpServer.listen(process.env.PORT as string || 8080, () => {
   console.log(`Https server running on port ${process.env.PORT as string || 8080}`);
 });
+
+export default app;

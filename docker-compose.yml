@@ -1,18 +1,14 @@
-x-aliases:
-  - &pg_envs
-    POSTGRES_DB: wellinjob
-    POSTGRES_USER: pepper
-    POSTGRES_PASSWORD: safennar
-  
 version: '3.7'
 
 services:
-  
+
   db:
     image: postgres:11-alpine
     restart: always
     environment:
-      <<: *pg_envs
+      POSTGRES_DB: pepper
+      POSTGRES_USER: pepper
+      POSTGRES_PASSWORD: sayfEnnar
     ports:
       - "127.0.0.1:5439:5432"
     volumes:
