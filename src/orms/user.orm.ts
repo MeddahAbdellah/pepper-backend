@@ -1,10 +1,36 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
+import { Model, DataTypes, Sequelize, HasManyGetAssociationsMixin, HasManyCountAssociationsMixin, HasManyHasAssociationMixin, HasManyAddAssociationMixin } from 'sequelize';
 import { MatchStatus } from 'models/types';
 import { Gender } from 'models/types';
 import { Party } from 'orms/party.orm';
 
-class UserMatch extends Model {}
-class User extends Model {}
+class UserMatch extends Model {
+  public status!: MatchStatus;
+}
+class User extends Model {
+  public id!: number;
+  public name!: string;
+  public gender!: Gender;
+  public phoneNumber!: string;
+  public address!: string;
+  public description!: string;
+  public job!: string;
+  public imgs!: Array<{ uri: string}>;
+  public interests!: string[];
+
+  public createdAt!: Date;
+  public updatedAt!: Date;
+  public deletedAt!: Date;
+
+  public getMatches!: HasManyGetAssociationsMixin<User>;
+  public addMatch!: HasManyAddAssociationMixin<User, number>;
+  public hasMatch!: HasManyHasAssociationMixin<User, number>;
+  public countMatches!: HasManyCountAssociationsMixin;
+
+  public getParties!: HasManyGetAssociationsMixin<Party>;
+  public addParty!: HasManyAddAssociationMixin<Party, number>;
+  public hasParty!: HasManyHasAssociationMixin<Party, number>;
+  public countParties!: HasManyCountAssociationsMixin;
+}
 
 const initUser = (sequelize: Sequelize) => {
   UserMatch.init({

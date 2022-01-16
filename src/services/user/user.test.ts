@@ -24,6 +24,23 @@ describe('## User', () => {
         interests: ['Science', 'Art', 'Socialism'],
       }
     );
+    await User.create(
+      {
+        name: 'Flenn',
+        gender: Gender.MAN,
+        phoneNumber: '074312309358',
+        address: 'Paris',
+        description: 'random',
+        job: 'Engineer',
+        imgs: [
+          { uri: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cG9ydHJhaXR8ZW58MHx8MHx8&w=1000&q=80' },
+          { uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fGJlYXV0aWZ1bCUyMCUyMHdvbWFufGVufDB8fDB8fA%3D%3D&w=1000&q=80' },
+          { uri: 'https://images.pexels.com/photos/38554/girl-people-landscape-sun-38554.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500' },
+          { uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8bWFuJTIwYW5kJTIwd29tYW58ZW58MHx8MHx8&w=1000&q=80' },
+        ],
+        interests: ['Science', 'Art', 'Socialism'],
+      }
+    );
     const party = await Party.create(
       {
         title: 'FleuruKs',
@@ -55,11 +72,14 @@ describe('## User', () => {
       }
     );
 
-    const user = await User.findAll({ include: 'parties' });
-    // @ts-ignore
-    await user[0].addParty(party);
+    let users = await User.findAll({ include: ['Parties', 'Matches'] });
+    await users[0].addParty(party);
+    await users[0].addMatch(users[1]);
+    users = await User.findAll({ include: ['Parties', 'Matches'] });
     console.log('party', party);
-    console.log('user', user);
+    console.log('user', users[0]);
+    const matches = await users[0].getMatches();
+    console.log('matches', matches);
     await request(app).post('/api/user/login').send({ phoneNumber: '0600000000'}).expect(httpStatus.BAD_REQUEST);
   });
 

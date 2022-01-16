@@ -1,7 +1,28 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
+import {
+  Model, DataTypes, Sequelize, 
+  HasManyGetAssociationsMixin, HasManyAddAssociationMixin, HasManyHasAssociationMixin, HasManyCountAssociationsMixin,
+} from 'sequelize';
 import { Party } from 'orms/party.orm';
 
-class Organizer extends Model {}
+class Organizer extends Model {
+  public id!: number;
+  public title!: string
+  public location!: string
+  public description!: string
+  public imgs!: Array<{ uri: string}>
+  public price!: string;
+  public foods!: Array<{ name: string, price: number }>;
+  public drinks!: Array<{ name: string, price: number }>;
+
+  public createdAt!: Date;
+  public updatedAt!: Date;
+  public deletedAt!: Date;
+
+  public getParties!: HasManyGetAssociationsMixin<Party>;
+  public addParty!: HasManyAddAssociationMixin<Party, number>;
+  public hasParty!: HasManyHasAssociationMixin<Party, number>;
+  public countParties!: HasManyCountAssociationsMixin;
+}
 
 const initOrganizer = (sequelize: Sequelize) => {
   Organizer.init({
@@ -14,26 +35,7 @@ const initOrganizer = (sequelize: Sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    theme: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    date: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
     location: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    people: {
-      type: DataTypes.STRING,
-    },
-    minAge: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    maxAge: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -56,7 +58,7 @@ const initOrganizer = (sequelize: Sequelize) => {
     drinks: {
       type: DataTypes.JSON,
       allowNull: false,
-    }
+    },
   }, { sequelize, paranoid: true });
 };
 

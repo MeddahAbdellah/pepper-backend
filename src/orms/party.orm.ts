@@ -1,7 +1,21 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
+import { Model, DataTypes, Sequelize, BelongsToSetAssociationMixin } from 'sequelize';
 import { Organizer } from 'orms/organizer.orm';
 
-class Party extends Model {}
+class Party extends Model {
+  public id!: number;
+  public theme!: string;
+  public date!: Date;
+  public people!: number;
+  public minAge!: number;
+  public maxAge!: number;
+
+  public createdAt!: Date;
+  public updatedAt!: Date;
+  public deletedAt!: Date;
+
+  public getOrganizer!: BelongsToSetAssociationMixin<Organizer, number>;
+  public setOrganizer!: BelongsToSetAssociationMixin<Organizer, number>; 
+}
 
 const initParty = (sequelize: Sequelize) => {
   Party.init({
@@ -19,14 +33,14 @@ const initParty = (sequelize: Sequelize) => {
       allowNull: false,
     },
     people: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
     },
     minAge: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     maxAge: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
   }, { sequelize, paranoid: true });
