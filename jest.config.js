@@ -14,6 +14,7 @@ module.exports = {
   testEnvironment: 'node',
   testMatch: [
     "<rootDir>/src/**/*.test.ts",
+    "<rootDir>/src/**/*.spec.ts",
   ],
   modulePaths: ["<rootDir>/src"],
   testTimeout: 25000,

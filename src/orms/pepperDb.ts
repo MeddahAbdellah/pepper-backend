@@ -13,8 +13,10 @@ const initDb = async () => {
   } catch (error) {
     console.error('Unable to connect to the database:', error);
   }
-
-  // await pepperDb.sync({ force: true });
 };
 
-export { initDb, pepperDb };
+const syncDbModels = async () => {
+  await pepperDb.sync({ force: true });
+};
+
+export { initDb, syncDbModels, pepperDb };

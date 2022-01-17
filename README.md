@@ -6,6 +6,7 @@ git clone https://github.com/MeddahAbdellah/pepper-backend
 cd pepper-backend
 npm install
 docker-compose up
+npm run init-data
 ```
 ## Available Scripts
 

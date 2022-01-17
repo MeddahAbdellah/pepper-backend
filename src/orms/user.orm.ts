@@ -1,4 +1,4 @@
-import { Model, DataTypes, Sequelize, HasManyGetAssociationsMixin, HasManyCountAssociationsMixin, HasManyHasAssociationMixin, HasManyAddAssociationMixin } from 'sequelize';
+import { Model, DataTypes, Sequelize, HasManyGetAssociationsMixin, HasManyCountAssociationsMixin, HasManyHasAssociationMixin, HasManyAddAssociationMixin, HasManySetAssociationsMixin, Association } from 'sequelize';
 import { MatchStatus } from 'models/types';
 import { Gender } from 'models/types';
 import { Party } from 'orms/party.orm';
@@ -16,12 +16,19 @@ class User extends Model {
   public job!: string;
   public imgs!: Array<{ uri: string}>;
   public interests!: string[];
+  public readonly matches!: User[];
+  public readonly parties!: Party[];
+  public static associations: {
+    matches: Association<User, User>;
+    parties: Association<User, Party>;
+  };
 
   public createdAt!: Date;
   public updatedAt!: Date;
   public deletedAt!: Date;
 
   public getMatches!: HasManyGetAssociationsMixin<User>;
+  public setMatch!: HasManySetAssociationsMixin<User, number>;
   public addMatch!: HasManyAddAssociationMixin<User, number>;
   public hasMatch!: HasManyHasAssociationMixin<User, number>;
   public countMatches!: HasManyCountAssociationsMixin;
@@ -61,11 +68,11 @@ const initUser = (sequelize: Sequelize) => {
       unique: true,
     },
     address: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false,
     },
     description: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
     },
     job: {
       type: DataTypes.STRING,
