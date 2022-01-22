@@ -1,7 +1,7 @@
 import casual from 'casual';
 import { User, Organizer, Party } from 'orms';
-import { Gender, MatchStatus } from 'models/types';
 import { syncDbModels } from 'orms/pepperDb';
+import { fake, createFakeUser } from 'helpers/fake';
 
 const numberOfUsersToAdd = 50;
 const numberOfOrganizersToAdd = 3;
@@ -12,33 +12,10 @@ describe('## Init Data', () => {
 
   beforeAll(async () => {
     await syncDbModels();
-    casual.define('img', () => ({ uri: 'https://picsum.photos/200/300' }));
-    casual.define('gender', () => casual.boolean ? Gender.MAN : Gender.WOMAN );
-    casual.define('match_status', () => [
-      MatchStatus.ACCEPTED,
-      MatchStatus.UNAVAILABLE,
-      MatchStatus.UNCHECKED,
-      MatchStatus.WAITING,
-    ][casual.integer(0, 3)]);
   });
 
   test('Add Users', async () => {
-    const fakeUsersData = [...Array(numberOfUsersToAdd).keys()].map(() => ({
-      name: casual.first_name,
-      gender: (casual as unknown as any).gender,
-      phoneNumber: casual.phone,
-      address: casual.address,
-      description: casual.description,
-      job: casual.company_name,
-      imgs: [(casual as unknown as any).img, (casual as unknown as any).img, (casual as unknown as any).img],
-      interests: [casual.word, casual.word, casual.word],
-    }));
-    users = await Promise.all(
-      fakeUsersData.map(async (userData) => {
-        const createdUser = await User.create(userData);
-        return createdUser;
-      })
-    );
+    users = await Promise.all([...Array(numberOfUsersToAdd).keys()].map(async () => createFakeUser()));
     expect(users).toBeTruthy();
   });
 
@@ -47,9 +24,9 @@ describe('## Init Data', () => {
     const minNumberOfMatches = 0;
     await Promise.all(
       users.map(async (user, key) => {
-        const numberOfMatches = casual.integer(minNumberOfMatches, maxNumberOfMatches);
+        const numberOfMatches = fake.integer(minNumberOfMatches, maxNumberOfMatches);
         for await (let i of [...Array(numberOfMatches).keys()]) {
-          const matchKey = casual.integer(i, numberOfUsersToAdd-1);
+          const matchKey = fake.integer(i, numberOfUsersToAdd-1);
           if (matchKey === key) { return; }
           // If we have matched two users. We might try to match them again since we are doing things randomly without protection
           try {
@@ -68,13 +45,13 @@ describe('## Init Data', () => {
 
   test('Add Organizers', async () => {
     const fakeOrganizersData = [...Array(numberOfOrganizersToAdd).keys()].map(() => ({
-      title: casual.title,
-      location: casual.address,
-      description: casual.description,
+      title: fake.title,
+      location: fake.address,
+      description: fake.description,
       imgs: [(casual as unknown as any).img, (casual as unknown as any).img, (casual as unknown as any).img],
-      price: casual.integer(0, 100),
-      foods: [casual.word, casual.word, casual.word],
-      drinks: [casual.word, casual.word, casual.word],
+      price: fake.integer(0, 100),
+      foods: [fake.word, fake.word, fake.word],
+      drinks: [fake.word, fake.word, fake.word],
     }));
 
     organizers = await Promise.all(
@@ -91,13 +68,12 @@ describe('## Init Data', () => {
     const minNumberOfParties = 0;
     await Promise.all(
       organizers.map(async (organizer) => {
-        const numberOfParties = casual.integer(minNumberOfParties, maxNumberOfParties);
-        console.log('CASUUAL', new Date(casual.date('YYYY-MM-DD')));
+        const numberOfParties = fake.integer(minNumberOfParties, maxNumberOfParties);
         for await (let i of [...Array(numberOfParties).keys()]) {
          const party = await Party.create({
-            theme: casual.title,
-            date: new Date(casual.date('YYYY-MM-DD')),
-            people: casual.integer(20, 40),
+            theme: fake.title,
+            date: new Date(fake.date('YYYY-MM-DD')),
+            people: fake.integer(20, 40),
             minAge: 18,
             maxAge: 25 + i,
           });
@@ -112,7 +88,7 @@ describe('## Init Data', () => {
     await Promise.all(
       parties.map(async (party) => {
         for await (let i of [...Array(party.people).keys()]) {
-          const userIndex = casual.integer(i, numberOfUsersToAdd-1);;
+          const userIndex = fake.integer(i, numberOfUsersToAdd-1);;
           await users[userIndex].addParty(party);
         }
       })

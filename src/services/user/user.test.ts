@@ -2,88 +2,170 @@ import request from 'supertest';
 import app from 'index';
 import httpStatus from 'http-status';
 import { User, Party } from 'orms';
-import { Gender } from 'models/types';
+import { createFakeUser, createFakePartyWithItsOrganizer } from 'helpers/fake';
+import { syncDbModels } from 'orms/pepperDb';
+import jwt from 'jsonwebtoken';
+import { IUser, MatchStatus, IParty } from 'models/types';
+import _ from 'lodash';
+import { normalizeUserMatches } from 'services/user/user.helper';
 
 describe('## User', () => {
-
-  test('should be able to login', async () => {
-    await User.create(
-      {
-        name: 'Sam',
-        gender: Gender.MAN,
-        phoneNumber: '07437209358',
-        address: 'Paris',
-        description: 'random',
-        job: 'Engineer',
-        imgs: [
-          { uri: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cG9ydHJhaXR8ZW58MHx8MHx8&w=1000&q=80' },
-          { uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fGJlYXV0aWZ1bCUyMCUyMHdvbWFufGVufDB8fDB8fA%3D%3D&w=1000&q=80' },
-          { uri: 'https://images.pexels.com/photos/38554/girl-people-landscape-sun-38554.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500' },
-          { uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8bWFuJTIwYW5kJTIwd29tYW58ZW58MHx8MHx8&w=1000&q=80' },
-        ],
-        interests: ['Science', 'Art', 'Socialism'],
-      }
-    );
-    await User.create(
-      {
-        name: 'Flenn',
-        gender: Gender.MAN,
-        phoneNumber: '074312309358',
-        address: 'Paris',
-        description: 'random',
-        job: 'Engineer',
-        imgs: [
-          { uri: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cG9ydHJhaXR8ZW58MHx8MHx8&w=1000&q=80' },
-          { uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fGJlYXV0aWZ1bCUyMCUyMHdvbWFufGVufDB8fDB8fA%3D%3D&w=1000&q=80' },
-          { uri: 'https://images.pexels.com/photos/38554/girl-people-landscape-sun-38554.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500' },
-          { uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8bWFuJTIwYW5kJTIwd29tYW58ZW58MHx8MHx8&w=1000&q=80' },
-        ],
-        interests: ['Science', 'Art', 'Socialism'],
-      }
-    );
-    const party = await Party.create(
-      {
-        title: 'FleuruKs',
-        theme: 'Soirée Internationl',
-        date: '24 octobre',
-        location: 'Paris 14',
-        people: '34',
-        minAge: '19',
-        maxAge: '28',
-        description: 'test',
-        foods: [
-          { name: 'Steak', price: 10 },
-          { name: 'Chicken', price: 12 },
-          { name: 'Porc', price: 8 },
-          { name: 'Beef', price: 14 },
-        ],
-        drinks: [
-          { name: 'Beer', price: 6 },
-          { name: 'Champain', price: 8 },
-          { name: 'Whiskey', price: 9 },
-          { name: 'Wine', price: 14 },
-        ],
-        price: 0,
-        imgs: [
-          { uri: 'https://image.jimcdn.com/app/cms/image/transf/none/path/s2f6af3166883d3ee/image/i8c4fa5b2ed1f62b8/version/1454158048/image.jpg' },
-          { uri: 'https://image.jimcdn.com/app/cms/image/transf/none/path/s2f6af3166883d3ee/image/i8c4fa5b2ed1f62b8/version/1454158048/image.jpg' },
-          { uri: 'https://image.jimcdn.com/app/cms/image/transf/none/path/s2f6af3166883d3ee/image/i8c4fa5b2ed1f62b8/version/1454158048/image.jpg' },
-        ],
-      }
-    );
-
-    let users = await User.findAll({ include: ['Parties', 'Matches'] });
-    await users[0].addParty(party);
-    await users[0].addMatch(users[1]);
-    users = await User.findAll({ include: ['Parties', 'Matches'] });
-    console.log('party', party);
-    console.log('user', users[0]);
-    const matches = await users[0].getMatches();
-    console.log('matches', matches);
-    await request(app).post('/api/user/login').send({ phoneNumber: '0600000000'}).expect(httpStatus.BAD_REQUEST);
+  let user1: User;
+  let user2: User;
+  let party: Party;
+  beforeAll(async () => {
+    await syncDbModels();
+    user1 = await createFakeUser();
+    user2 = await createFakeUser();
+    party = await createFakePartyWithItsOrganizer();
   });
 
-  test('should not be able to login if phoneNumber is not specifier', async () => {
-    await request(app).post('/api/user/login').send({ test: 'data'}).expect(httpStatus.BAD_REQUEST);
+  describe('# Login', () => {
+    test('should NOT be able to login if phoneNumber is not provided', async () => {
+      await request(app).post('/api/user/login').send({ randomField: 'random' }).expect(httpStatus.BAD_REQUEST);
+    });
+  
+    test('should NOT be able to login if phoneNumber does not exist', async () => {
+      await request(app).post('/api/user/login').send({ phoneNumber: '0000000000'}).expect(httpStatus.UNAUTHORIZED);
+    });
+  
+    test('should be able to login if phoneNumber exists', async () => {
+      const { token } = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber}).expect(httpStatus.OK)).body;
+      const authentifiedUser = jwt.verify(token, 'testKey') as IUser;
+  
+      expect(user1.id).toEqual(authentifiedUser.id);
+    });
+  });
+
+  describe('# Query user data', () => {
+    let tokenOfUser1: string;
+
+    beforeAll(async () => {
+      const userLogin = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber}).expect(httpStatus.OK)).body;
+      tokenOfUser1 = userLogin.token;
+    });
+
+    test('should be able to query info with the right token', async () => {
+      const { user } = (await request(app).get(`/api/user/info`).
+        set('Authorization', tokenOfUser1).
+        expect(httpStatus.OK)).body;
+      expect(user1.id).toEqual(user.id);
+    });
+
+    test('should NOT be able to query info with the wrong token', async () => {
+      await request(app).get(`/api/user/info`).
+        set('Authorization', 'wrongToken').
+        expect(httpStatus.UNAUTHORIZED);
+    });
+
+    describe('# User Matches', () => {
+      let matches: User[];
+      beforeAll(async () => {
+        matches = (await request(app).post(`/api/user/matches`).
+        set('Authorization', tokenOfUser1).
+        send({ matchId: user2.id }).
+        expect(httpStatus.OK)).body.matches;
+      });
+
+      test('Query should return the list of matches', () => expect(matches).toEqual(
+        expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.UNAVAILABLE }])
+      ));
+
+      test('Should be Able to get matches of user', async () => {
+        const returnMatches = (await request(app).get(`/api/user/matches`).
+          set('Authorization', tokenOfUser1).
+          expect(httpStatus.OK)).body.matches;
+
+        expect(returnMatches).toEqual(
+          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.UNAVAILABLE }])
+        )
+      });
+
+      test('should find the new match in the user matches list', async () => {
+        const userAfterMatch = await User.findOne({ where: { id: user1.id } });
+        const userMatches = await userAfterMatch?.getMatches({ raw: true });
+        const normalizedMatches = normalizeUserMatches(userMatches || []);
+        expect(normalizedMatches).toEqual(
+          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.UNAVAILABLE }])
+        );
+      });
+
+
+      test('should find the new match in the second user matches list too', async () => {
+        const userAfterMatch = await User.findOne({ where: { id: user2.id } });
+        const matches = await userAfterMatch?.getMatches({ raw: true });
+        const normalizedMatches = normalizeUserMatches(matches || []);
+        expect(normalizedMatches).toEqual(
+          expect.arrayContaining([{ ..._.omit(user1, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.UNAVAILABLE }])
+        );
+      });
+
+      test('should update match for user but NOT for second user and return them', async () => {
+        const user1Matches = (await request(app).put(`/api/user/matches`).
+          set('Authorization', tokenOfUser1).
+          send({ matchId: user2.id, status: MatchStatus.ACCEPTED }).
+          expect(httpStatus.OK)).body.matches;
+        
+        expect(user1Matches).toEqual(
+          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.ACCEPTED }])
+        );
+
+        const user1AfterMatch = await User.findOne({ where: { id: user1.id } });
+        const user1AfterMatchMatches = await user1AfterMatch?.getMatches({ raw: true });
+        const normalizedUser1Matches = normalizeUserMatches(user1AfterMatchMatches || []);
+        expect(normalizedUser1Matches).toEqual(
+          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.ACCEPTED }])
+        );
+
+        const user2AfterMatch = await User.findOne({ where: { id: user2.id } });
+        const user2AfterMatchMatches = await user2AfterMatch?.getMatches({ raw: true });
+        const normalizedUser2Matches = normalizeUserMatches(user2AfterMatchMatches || []);
+        expect(normalizedUser2Matches).toEqual(
+          expect.arrayContaining([{ ..._.omit(user1, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.UNAVAILABLE }])
+        );
+      });
+    });
+
+
+    // TODO: check parties with the fields not only ids
+    describe('# User Parties', () => {
+      test('Should be Able to add party to user and return them', async () => {
+        const parties = (await request(app).post(`/api/user/parties`).
+          set('Authorization', tokenOfUser1).
+          send({ partyId: party.id }).
+          expect(httpStatus.OK)).body.parties;
+        
+        expect(parties.map((currentParty: IParty) => currentParty.id)).toEqual([party.id]);
+
+        const userAfterAddingParty = await User.findOne({ where: { id: user1.id } });
+        const AfterAddingParty = await userAfterAddingParty?.getParties({ raw: true });
+        expect(AfterAddingParty?.map((currentParty: Party) => currentParty.id)).toEqual([party.id]);
+      });
+
+      test('Should be Able to get parties of user', async () => {
+        const parties = (await request(app).get(`/api/user/parties`).
+          set('Authorization', tokenOfUser1).
+          expect(httpStatus.OK)).body.parties;
+        
+        expect(parties.map((currentParty: IParty) => currentParty.id)).toEqual([party.id]);
+
+        const userAfterAddingParty = await User.findOne({ where: { id: user1.id } });
+        const AfterAddingParty = await userAfterAddingParty?.getParties({ raw: true });
+        expect(AfterAddingParty?.map((currentParty: Party) => currentParty.id)).toEqual([party.id]);
+      });
+
+      test('Should be Able to cancel user\'s party and return them', async () => {
+        const parties = (await request(app).delete(`/api/user/parties`).
+          set('Authorization', tokenOfUser1).
+          send({ partyId: party.id }).
+          expect(httpStatus.OK)).body.parties;
+        
+        expect(parties.map((currentParty: IParty) => currentParty.id)).toEqual([]);
+  
+        const userAfterAddingParty = await User.findOne({ where: { id: user1.id } });
+        const AfterAddingParty = await userAfterAddingParty?.getParties({ raw: true });
+        expect(AfterAddingParty?.map((currentParty: Party) => currentParty.id)).toEqual([]);
+      });
+    });
   });
 });

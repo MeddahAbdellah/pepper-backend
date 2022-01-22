@@ -1,5 +1,5 @@
-import { Model, DataTypes, Sequelize, HasManyGetAssociationsMixin, HasManyCountAssociationsMixin, HasManyHasAssociationMixin, HasManyAddAssociationMixin, HasManySetAssociationsMixin, Association } from 'sequelize';
-import { MatchStatus } from 'models/types';
+import { Model, DataTypes, Sequelize, HasManyGetAssociationsMixin, HasManyCountAssociationsMixin, HasManyHasAssociationMixin, HasManyAddAssociationMixin, HasManySetAssociationsMixin, Association, HasManyRemoveAssociationMixin } from 'sequelize';
+import { MatchStatus, IUser } from 'models/types';
 import { Gender } from 'models/types';
 import { Party } from 'orms/party.orm';
 
@@ -16,12 +16,15 @@ class User extends Model {
   public job!: string;
   public imgs!: Array<{ uri: string}>;
   public interests!: string[];
-  public readonly matches!: User[];
+  public readonly matches!: UserMatch[];
   public readonly parties!: Party[];
+
   public static associations: {
     matches: Association<User, User>;
     parties: Association<User, Party>;
   };
+
+  public readonly dataValues!: IUser;
 
   public createdAt!: Date;
   public updatedAt!: Date;
@@ -37,6 +40,7 @@ class User extends Model {
   public addParty!: HasManyAddAssociationMixin<Party, number>;
   public hasParty!: HasManyHasAssociationMixin<Party, number>;
   public countParties!: HasManyCountAssociationsMixin;
+  public removeParty!: HasManyRemoveAssociationMixin<Party, number>;
 }
 
 const initUser = (sequelize: Sequelize) => {
@@ -91,7 +95,7 @@ const initUser = (sequelize: Sequelize) => {
 
 const associateUser = () => {
   User.belongsToMany(User, { through: UserMatch, as: 'Matches' });
-  User.belongsToMany(Party, { through: 'UserParties', as: 'Parties' });
+  User.belongsToMany(Party, { through: { model: 'UserParties', paranoid: true }, as: 'Parties' });
 }
 
-export { initUser, associateUser, User };
+export { initUser, associateUser, User, UserMatch };

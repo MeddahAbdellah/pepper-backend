@@ -1,4 +1,4 @@
-import { Model, DataTypes, Sequelize, BelongsToSetAssociationMixin } from 'sequelize';
+import { Model, DataTypes, Sequelize, BelongsToSetAssociationMixin, BelongsToGetAssociationMixin } from 'sequelize';
 import { Organizer } from 'orms/organizer.orm';
 
 class Party extends Model {
@@ -13,7 +13,7 @@ class Party extends Model {
   public updatedAt!: Date;
   public deletedAt!: Date;
 
-  public getOrganizer!: BelongsToSetAssociationMixin<Organizer, number>;
+  public getOrganizer!: BelongsToGetAssociationMixin<Organizer>;
   public setOrganizer!: BelongsToSetAssociationMixin<Organizer, number>; 
 }
 
