@@ -39,10 +39,13 @@ describe('## User', () => {
 
   describe('# Query user data', () => {
     let tokenOfUser1: string;
+    let tokenOfUser2: string;
 
     beforeAll(async () => {
-      const userLogin = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber}).expect(httpStatus.OK)).body;
-      tokenOfUser1 = userLogin.token;
+      const user1Login = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber}).expect(httpStatus.OK)).body;
+      const user2Login = (await request(app).post('/api/user/login').send({ phoneNumber: user2.phoneNumber}).expect(httpStatus.OK)).body;
+      tokenOfUser1 = user1Login.token;
+      tokenOfUser2 = user2Login.token;
     });
 
     test('should be able to query info with the right token', async () => {
@@ -100,21 +103,21 @@ describe('## User', () => {
         );
       });
 
-      test('should update match for user but NOT for second user and return them', async () => {
+      test('should update match for user but NOT for second user if the status is below waiting for the second user and return them', async () => {
         const user1Matches = (await request(app).put(`/api/user/matches`).
           set('Authorization', tokenOfUser1).
-          send({ matchId: user2.id, status: MatchStatus.ACCEPTED }).
+          send({ matchId: user2.id, status: MatchStatus.WAITING }).
           expect(httpStatus.OK)).body.matches;
         
         expect(user1Matches).toEqual(
-          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.ACCEPTED }])
+          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.WAITING }])
         );
 
         const user1AfterMatch = await User.findOne({ where: { id: user1.id } });
         const user1AfterMatchMatches = await user1AfterMatch?.getMatches({ raw: true });
         const normalizedUser1Matches = normalizeUserMatches(user1AfterMatchMatches || []);
         expect(normalizedUser1Matches).toEqual(
-          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.ACCEPTED }])
+          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.WAITING }])
         );
 
         const user2AfterMatch = await User.findOne({ where: { id: user2.id } });
@@ -123,6 +126,64 @@ describe('## User', () => {
         expect(normalizedUser2Matches).toEqual(
           expect.arrayContaining([{ ..._.omit(user1, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.UNAVAILABLE }])
         );
+      });
+
+      test('should NOT be able to update match for himself', async () => {
+        await request(app).put(`/api/user/matches`).
+          set('Authorization', tokenOfUser1).
+          send({ matchId: user1.id, status: MatchStatus.WAITING }).
+          expect(httpStatus.BAD_REQUEST);
+      });
+
+      test('should NOT be able to update match status to ACCEPTED', async () => {
+        await request(app).put(`/api/user/matches`).
+          set('Authorization', tokenOfUser1).
+          send({ matchId: user2.id, status: MatchStatus.ACCEPTED }).
+          expect(httpStatus.BAD_REQUEST);
+      });
+
+      test('should update match for second user AND for first user when the status of the first is waiting and the second is going to be waiting too', async () => {
+        const user2Matches = (await request(app).put(`/api/user/matches`).
+          set('Authorization', tokenOfUser2).
+          send({ matchId: user1.id, status: MatchStatus.WAITING }).
+          expect(httpStatus.OK)).body.matches;
+        
+        expect(user2Matches).toEqual(
+          expect.arrayContaining([{ ..._.omit(user1, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.ACCEPTED }])
+        );
+
+        const user2AfterMatch = await User.findOne({ where: { id: user2.id } });
+        const user2AfterMatchMatches = await user2AfterMatch?.getMatches({ raw: true });
+        const normalizedUser2Matches = normalizeUserMatches(user2AfterMatchMatches || []);
+        expect(normalizedUser2Matches).toEqual(
+          expect.arrayContaining([{ ..._.omit(user1, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.ACCEPTED }])
+        );
+
+        const user1AfterMatch = await User.findOne({ where: { id: user1.id } });
+        const user1AfterMatchMatches = await user1AfterMatch?.getMatches({ raw: true });
+        const normalizedUser1Matches = normalizeUserMatches(user1AfterMatchMatches || []);
+        expect(normalizedUser1Matches).toEqual(
+          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.ACCEPTED }])
+        );
+      });
+
+      test('Should be able to delete a match and they should be deleted for the other user too', async () => {
+        const matchesAfterDeletion = (await request(app).delete(`/api/user/matches`).
+        set('Authorization', tokenOfUser1).
+        send({ matchId: user2.id }).
+        expect(httpStatus.OK)).body.matches;
+        
+        expect(matchesAfterDeletion).toEqual( expect.arrayContaining([]));
+
+        const user1AfterDeletion = await User.findOne({ where: { id: user1.id } });
+        const matchesOfUser1AfterDeletion = await user1AfterDeletion?.getMatches({ raw: true });
+        const normalizedMatchesOfUser1 = normalizeUserMatches(matchesOfUser1AfterDeletion || []);
+        expect(normalizedMatchesOfUser1).toEqual( expect.arrayContaining([]));
+
+        const user2AfterDeletion = await User.findOne({ where: { id: user1.id } });
+        const matchesOfUser2AfterDeletion = await user2AfterDeletion?.getMatches({ raw: true });
+        const normalizedMatchesOfUser2 = normalizeUserMatches(matchesOfUser2AfterDeletion || []);
+        expect(normalizedMatchesOfUser2).toEqual( expect.arrayContaining([]));
       });
     });
 

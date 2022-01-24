@@ -1,6 +1,7 @@
-import { User } from "orms";
+import { User, UserMatch } from "orms";
 import { normalizeUserParties, normalizeUserMatches } from 'services/user/user.helper';
-import { IParty, IMatch } from 'models/types';
+import { IParty, IMatch, MatchStatus } from 'models/types';
+import { Op } from 'sequelize/dist';
 
 export class UserService {
   public static async getUserParties(user: User): Promise<IParty[]> {
@@ -19,5 +20,22 @@ export class UserService {
     const matches = await user.getMatches({ raw: true });
     const normalizedMatches = normalizeUserMatches(matches);
     return normalizedMatches;
+  }
+
+  public static async updateUserMatchStatus(user: User, match: User, status: MatchStatus): Promise<void | null> {
+    const userMatchStatus = (await UserMatch.findOne({ where: { UserId: user.id}}))?.status;
+    const matchUserStatus = (await UserMatch.findOne({ where: { UserId: match.id}}))?.status;
+
+    if(!userMatchStatus || !matchUserStatus) {
+      throw 'Match and User are not actually matched';
+    }
+
+    if( status === MatchStatus.WAITING && matchUserStatus === MatchStatus.WAITING) {
+      await UserMatch.update({ status: MatchStatus.ACCEPTED }, { where: { [Op.and]: [{ UserId: user.id }, { MatchId: match.id }] } });
+      await UserMatch.update({ status: MatchStatus.ACCEPTED }, { where: { [Op.and]: [{ UserId: match.id }, { MatchId: user.id }] } });
+      return null;
+    }
+
+    await UserMatch.update({ status }, { where: { [Op.and]: [{ UserId: user.id }, { MatchId: match.id }] } });
   }
 }

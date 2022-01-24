@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import Joi from 'joi';
 import { validation } from 'helpers/helpers';
-import { User, UserMatch, Party } from 'orms';
+import { User, Party, UserMatch } from 'orms';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
 import { IUser, MatchStatus } from 'models/types';
 import _ from 'lodash';
-import { Op } from 'sequelize/dist';
 import { UserService } from 'services/user/user.service';
+import { Op } from 'sequelize/dist';
 
 interface UserRequest extends Request {
   user: User
@@ -37,6 +37,7 @@ export class UserController {
     return res.json({ user: _.omit(user, ['createdAt', 'updatedAt', 'deletedAt']) });
   }
 
+  @validation(Joi.object({}))
   public static async getMatches(req: UserRequest, res: Response): Promise<Response<{ matches: User[] }>> {
     const user = await User.findOne({ where: { id: req.user.id }});
 
@@ -67,29 +68,52 @@ export class UserController {
 
   @validation(Joi.object({
     matchId: Joi.number().required(),
-    status: Joi.string().valid(...Object.values(MatchStatus)).required(),
+    status: Joi.string().valid(...Object.values(MatchStatus)).invalid(MatchStatus.ACCEPTED).required(),
   }))
   public static async updateMatch(req: UserRequest, res: Response): Promise<Response<{ matches: User[] }>> {
-    // TODO: implement logic for matching
-    await UserMatch.update(
-      { status: req.body.status },
-      { 
-        where: { 
-          [Op.and]: [{ UserId: req.user.id }, { MatchId: req.body.matchId }]
-        }
-      }
-    );
+    const user = await User.findOne({ where: { id: req.user.id } });
+    const match = await User.findOne({ where: { id: req.body.matchId } });
 
+    
+    if (!user || !match) {
+      res.status(httpStatus.NOT_FOUND);
+      return res.json({ message: 'User or Match does not exist' });
+    }
+    
+    if (user.id === match.id) {
+      res.status(httpStatus.BAD_REQUEST);
+      return res.json({ message: 'User cant match with himself' });
+    }
+
+    try{
+      await UserService.updateUserMatchStatus(user, match, req.body.status);
+    } catch(message){
+      res.status(httpStatus.NOT_FOUND);
+      return res.json({ message });
+    }
+
+    const normalizedMatches = await UserService.getUserMatches(user);
+    return res.json({ matches: normalizedMatches });
+  }
+
+  @validation(Joi.object({
+    matchId: Joi.number().required(),
+  }))
+  public static async deleteMatch(req: UserRequest, res: Response): Promise<Response<{ matches: User[] }>> {
     const user = await User.findOne({ where: { id: req.user.id } });
 
     if (!user) {
       res.status(httpStatus.NOT_FOUND);
       return res.json({ message: 'User does not exist' });
     }
+
+    await UserMatch.update({ status: MatchStatus.ACCEPTED }, { where: { [Op.and]: [{ UserId: req.user.id }, { MatchId: req.body.matchId }] } });
+
     const normalizedMatches = await UserService.getUserMatches(user);
     return res.json({ matches: normalizedMatches });
   }
 
+  @validation(Joi.object({}))
   public static async getParties(req: UserRequest, res: Response): Promise<Response<{ parties: Party[] }>> {
     const user = await User.findOne({ where: { id: req.user.id }});
 
