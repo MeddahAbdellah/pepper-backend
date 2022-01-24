@@ -15,8 +15,9 @@ describe('## Init Data', () => {
   });
 
   test('Add Users', async () => {
-    users = await Promise.all([...Array(numberOfUsersToAdd).keys()].map(async () => createFakeUser()));
-    expect(users).toBeTruthy();
+    const fakeUsersData = await Promise.all([...Array(numberOfUsersToAdd).keys()].map(async () => createFakeUser()));
+    users = await User.findAll();
+    expect(fakeUsersData).toBeTruthy();
   });
 
   test('Match Users', async () => {
