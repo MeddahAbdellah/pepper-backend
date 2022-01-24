@@ -1,7 +1,8 @@
 import { User, UserMatch } from "orms";
 import { normalizeUserParties, normalizeUserMatches } from 'services/user/user.helper';
 import { IParty, IMatch, MatchStatus } from 'models/types';
-import { Op } from 'sequelize/dist';
+import { Op } from 'sequelize';
+import moment from 'moment';
 
 export class UserService {
   public static async getUserParties(user: User): Promise<IParty[]> {
@@ -37,5 +38,19 @@ export class UserService {
     }
 
     await UserMatch.update({ status }, { where: { [Op.and]: [{ UserId: user.id }, { MatchId: match.id }] } });
+  }
+
+  public static async updateAllUnavailableFromYesterdayToUnchecked(): Promise<void> {
+    const todayFirstHour = moment().startOf('day').format("YYYY-MM-DD");
+    await UserMatch.update(
+      { status: MatchStatus.UNCHECKED },
+      { where: { 
+        [Op.and]: [
+          { status: MatchStatus.UNAVAILABLE },
+          { createdAt: { [Op.lt]: todayFirstHour } }
+        ],
+        },
+      },
+    );
   }
 }

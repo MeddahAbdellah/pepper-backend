@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import { IUser, MatchStatus } from 'models/types';
 import _ from 'lodash';
 import { UserService } from 'services/user/user.service';
-import { Op } from 'sequelize/dist';
+import { Op } from 'sequelize';
 
 interface UserRequest extends Request {
   user: User
