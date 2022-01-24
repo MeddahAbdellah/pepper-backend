@@ -68,7 +68,7 @@ export class UserController {
 
   @validation(Joi.object({
     matchId: Joi.number().required(),
-    status: Joi.string().valid(...Object.values(MatchStatus)).invalid(MatchStatus.ACCEPTED).required(),
+    status: Joi.string().valid(...Object.values(MatchStatus)).invalid(MatchStatus.ACCEPTED).invalid(MatchStatus.UNCHECKED).required(),
   }))
   public static async updateMatch(req: UserRequest, res: Response): Promise<Response<{ matches: User[] }>> {
     const user = await User.findOne({ where: { id: req.user.id } });

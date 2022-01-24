@@ -142,6 +142,13 @@ describe('## User', () => {
           expect(httpStatus.BAD_REQUEST);
       });
 
+      test('should NOT be able to update match status to UNCHECKED', async () => {
+        await request(app).put(`/api/user/matches`).
+          set('Authorization', tokenOfUser1).
+          send({ matchId: user2.id, status: MatchStatus.UNCHECKED }).
+          expect(httpStatus.BAD_REQUEST);
+      });
+
       test('should update match for second user AND for first user when the status of the first is waiting and the second is going to be waiting too', async () => {
         const user2Matches = (await request(app).put(`/api/user/matches`).
           set('Authorization', tokenOfUser2).
