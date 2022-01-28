@@ -1,11 +1,11 @@
 import { Sequelize } from 'sequelize';
 import 'dotenv/config';
 
-if(!process.env.dbName || !process.env.dbUserName || !process.env.dbPassword) {
+if(!process.env.DB_NAME || !process.env.DB_USERNAME || !process.env.DB_PASSWORD) {
   throw 'Database credentials non provided';
 }
 
-const pepperDb = new Sequelize(process.env.dbName, process.env.dbUserName, process.env.dbPassword, {
+const pepperDb = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
   host: 'localhost',
   port: 5439,
   dialect: 'postgres',
