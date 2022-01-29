@@ -4,10 +4,12 @@ import { validation } from 'helpers/helpers';
 import { User, Party, UserMatch } from 'orms';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
-import { IUser, MatchStatus } from 'models/types';
+import { IUser, MatchStatus, Gender } from 'models/types';
 import _ from 'lodash';
 import { UserService } from 'services/user/user.service';
 import { Op } from 'sequelize';
+import 'dotenv/config';
+import AuthHelper from 'helpers/auth';
 
 interface UserRequest extends Request {
   user: User
@@ -17,13 +19,79 @@ export class UserController {
   @validation(Joi.object({
     phoneNumber: Joi.string().required(),
   }))
+  public static async createLoginVerificationAndCheckIfUserExisits(req: Request, res: Response): Promise<Response<{ userExists: boolean }>> {
+    const user = await User.findOne({ where: { phoneNumber: req.body.phoneNumber }, raw: true});
+    await AuthHelper.createVerification(req.body.phoneNumber);
+    return res.json({ userExists: !!user });
+  }
+
+  @validation(Joi.object({
+    phoneNumber: Joi.string().required(),
+    code: Joi.string().required(),
+    name: Joi.string().required(),
+    gender: Joi.string().valid(...Object.values(Gender)).required(),
+    address: Joi.string().required(),
+    description: Joi.string().required(),
+    job: Joi.string().required(),
+    imgs: Joi.array().items({ uri: Joi.string() }),
+    interests: Joi.array().items(Joi.string()),
+  }))
+  public static async subscribe(req: Request, res: Response): Promise<Response<{ token: string }>> {
+    const isVerified = await AuthHelper.checkVerification(req.body.phoneNumber, req.body.code);
+
+    if (!isVerified) {
+      res.sendStatus(httpStatus.UNAUTHORIZED);
+      return res.json({ message: 'Verification code not valid' });
+    }
+
+    await User.create({
+      name: req.body.name,
+      gender: req.body.gender,
+      phoneNumber: req.body.phoneNumber,
+      address: req.body.address,
+      description: req.body.description,
+      job: req.body.job,
+      imgs: req.body.imgs,
+      interests: req.body.interests,
+    });
+
+    const user = await User.findOne({ where: { phoneNumber: req.body.phoneNumber }, raw: true});
+    
+    if (!user) {
+      res.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
+      return res.json({ message: 'User could not be created!' });
+    }
+
+    if (!process.env.JWT_KEY) {
+      throw 'JWT key not provided';
+    }
+    const token = jwt.sign(user, process.env.JWT_KEY);
+    return res.json({ token });
+  }
+
+  @validation(Joi.object({
+    phoneNumber: Joi.string().required(),
+    code: Joi.string().required(),
+  }))
   public static async login(req: Request, res: Response): Promise<Response<{ token: string }>> {
     const user = await User.findOne({ where: { phoneNumber: req.body.phoneNumber }, raw: true});
     if (!user) {
       res.sendStatus(httpStatus.UNAUTHORIZED);
       return res.json({ message: 'User does not exist' });
     }
-    const token = jwt.sign(user, 'testKey');
+
+
+    const isVerified = await AuthHelper.checkVerification(req.body.phoneNumber, req.body.code);
+
+    if (!isVerified) {
+      res.sendStatus(httpStatus.UNAUTHORIZED);
+      return res.json({ message: 'Verification code not valid' });
+    }
+
+    if (!process.env.JWT_KEY) {
+      throw 'JWT key not provided';
+    }
+    const token = jwt.sign(user, process.env.JWT_KEY);
     return res.json({ token });
   }
 

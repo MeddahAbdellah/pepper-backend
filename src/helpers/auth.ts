@@ -1,5 +1,6 @@
 import twilio from 'twilio';
 import 'dotenv/config';
+import EnvHelper from 'helpers/envHelper';
 
 if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
   throw 'Twilio credentials are not provided';
@@ -14,6 +15,10 @@ const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_A
 export default class AuthHelper {
 
   public static async createVerification(phoneNumber: string): Promise<void> {
+    if (EnvHelper.isLocal()) {
+      return;
+    }
+
     if (!process.env.TWILIO_SERVICE_ID) {
       throw 'Twilio service id is not provided';
     }
@@ -25,6 +30,10 @@ export default class AuthHelper {
   }
 
   public static async checkVerification(phoneNumber: string, code: string): Promise<boolean> {
+    if (EnvHelper.isLocal()) {
+      return true;
+    }
+
     if (!process.env.TWILIO_SERVICE_ID) {
       throw 'Twilio service id is not provided';
     }

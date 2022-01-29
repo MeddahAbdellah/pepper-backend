@@ -12,6 +12,8 @@ class UserRoutes {
   }
 
   private _assignRoute() {
+    this._router.route('/login').get(checkParametersAndCallRoute(UserController.createLoginVerificationAndCheckIfUserExisits));
+    this._router.route('/login').put(checkParametersAndCallRoute(UserController.subscribe));
     this._router.route('/login').post(checkParametersAndCallRoute(UserController.login));
     this._router.route('/info').get(authorizeForUser,checkParametersAndCallRoute(UserController.getUser));
     this._router.route('/matches').get(authorizeForUser,checkParametersAndCallRoute(UserController.getMatches));

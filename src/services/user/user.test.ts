@@ -2,12 +2,13 @@ import request from 'supertest';
 import app from 'index';
 import httpStatus from 'http-status';
 import { User, Party } from 'orms';
-import { createFakeUser, createFakePartyWithItsOrganizer } from 'helpers/fake';
+import { createFakeUser, createFakePartyWithItsOrganizer, fake } from 'helpers/fake';
 import { syncDbModels } from 'orms/pepperDb';
 import jwt from 'jsonwebtoken';
 import { IUser, MatchStatus, IParty } from 'models/types';
 import _ from 'lodash';
 import { normalizeUserMatches } from 'services/user/user.helper';
+import 'dotenv/config';
 
 describe('## User', () => {
   let user1: User;
@@ -20,18 +21,55 @@ describe('## User', () => {
     party = await createFakePartyWithItsOrganizer();
   });
 
+  // TODO: mock twilio and test verification
   describe('# Login', () => {
     test('should NOT be able to login if phoneNumber is not provided', async () => {
       await request(app).post('/api/user/login').send({ randomField: 'random' }).expect(httpStatus.BAD_REQUEST);
     });
   
     test('should NOT be able to login if phoneNumber does not exist', async () => {
-      await request(app).post('/api/user/login').send({ phoneNumber: '0000000000'}).expect(httpStatus.UNAUTHORIZED);
+      await request(app).post('/api/user/login').send({ phoneNumber: '0000000000', code: '000000' }).expect(httpStatus.UNAUTHORIZED);
+    });
+
+    test('should be able to see if user with phoneNumber does NOT exists if he actually does NOT exist', async () => {
+      const { userExists } = (await request(app).get('/api/user/login').send({ phoneNumber: '0000000000' }).expect(httpStatus.OK)).body;
+      expect(userExists).toBe(false);
+    });
+
+    test('should be able to see if user with phoneNumber exists if he actually does exist', async () => {
+      const { userExists } = (await request(app).get('/api/user/login').send({ phoneNumber: user1.phoneNumber }).expect(httpStatus.OK)).body;
+      expect(userExists).toBe(true);
+    });
+
+    test('should be able to subscribe with phoneNumber', async () => {
+      const userInfo = {
+        name: fake.first_name,
+        gender: (fake as unknown as any).gender,
+        phoneNumber: '0000000000',
+        address: fake.address,
+        description: fake.description,
+        job: fake.company_name,
+        imgs: [(fake as unknown as any).img, (fake as unknown as any).img, (fake as unknown as any).img],
+        interests: [fake.word, fake.word, fake.word],
+      };
+
+      const { token } = (await request(app).put('/api/user/login').send({ ...userInfo, code: '000000' }).expect(httpStatus.OK)).body;
+      const subscribedUser = await User.findOne({ where: { phoneNumber: '0000000000'}}) as unknown as User;
+      
+      if (!process.env.JWT_KEY) {
+        throw 'JWT key not provided';
+      }
+
+      const authentifiedUser = jwt.verify(token, process.env.JWT_KEY) as IUser;
+      expect(subscribedUser.id).toEqual(authentifiedUser.id);
     });
   
     test('should be able to login if phoneNumber exists', async () => {
-      const { token } = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber}).expect(httpStatus.OK)).body;
-      const authentifiedUser = jwt.verify(token, 'testKey') as IUser;
+      const { token } = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber, code: '000000' }).expect(httpStatus.OK)).body;
+      if (!process.env.JWT_KEY) {
+        throw 'JWT key not provided';
+      }
+      const authentifiedUser = jwt.verify(token, process.env.JWT_KEY) as IUser;
   
       expect(user1.id).toEqual(authentifiedUser.id);
     });
@@ -42,8 +80,8 @@ describe('## User', () => {
     let tokenOfUser2: string;
 
     beforeAll(async () => {
-      const user1Login = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber}).expect(httpStatus.OK)).body;
-      const user2Login = (await request(app).post('/api/user/login').send({ phoneNumber: user2.phoneNumber}).expect(httpStatus.OK)).body;
+      const user1Login = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber, code: '000000' }).expect(httpStatus.OK)).body;
+      const user2Login = (await request(app).post('/api/user/login').send({ phoneNumber: user2.phoneNumber, code: '000000' }).expect(httpStatus.OK)).body;
       tokenOfUser1 = user1Login.token;
       tokenOfUser2 = user2Login.token;
     });
