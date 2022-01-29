@@ -3,6 +3,8 @@ import bodyParser from 'body-parser';
 import https from 'https';
 import routes from 'routes';
 import { runJobs } from 'services/jobs';
+import figlet from 'figlet';
+import gradient from 'gradient-string';
 
 const app = express();
 
@@ -24,9 +26,10 @@ app.use((_req: any, res: any, next: () => void) => {
 });
 app.use('/api/', routes);
 
-httpServer.listen(process.env.PORT as string || 9999, () => {
+httpServer.listen(process.env.PORT as string || 8080, () => {
   runJobs();
-  console.log(`Https server running on port ${process.env.PORT as string || 9999}`);
+  console.log(gradient.pastel.multiline(figlet.textSync('Pepper')));
+  console.log(`Https server running on port ${process.env.PORT as string || 8080}`);
 });
 
 export default app;
