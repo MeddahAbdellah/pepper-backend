@@ -14,7 +14,7 @@ function getValidationHandler(schema: Joi.Schema): RequestHandler {
   return (req: any, res: any, next: any) => {
     const isValid = schema.validate(req.body ?? req.query);
     if (isValid.error) {
-      res.sendStatus(httpStatus.BAD_REQUEST);
+      res.status(httpStatus.BAD_REQUEST);
       res.json({
         message: isValid.error,
       });

@@ -40,7 +40,7 @@ export class UserController {
     const isVerified = await AuthHelper.checkVerification(req.body.phoneNumber, req.body.code);
 
     if (!isVerified) {
-      res.sendStatus(httpStatus.UNAUTHORIZED);
+      res.status(httpStatus.UNAUTHORIZED);
       return res.json({ message: 'Verification code not valid' });
     }
 
@@ -58,7 +58,7 @@ export class UserController {
     const user = await User.findOne({ where: { phoneNumber: req.body.phoneNumber }, raw: true});
     
     if (!user) {
-      res.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
+      res.status(httpStatus.INTERNAL_SERVER_ERROR);
       return res.json({ message: 'User could not be created!' });
     }
 
@@ -76,7 +76,7 @@ export class UserController {
   public static async login(req: Request, res: Response): Promise<Response<{ token: string }>> {
     const user = await User.findOne({ where: { phoneNumber: req.body.phoneNumber }, raw: true});
     if (!user) {
-      res.sendStatus(httpStatus.UNAUTHORIZED);
+      res.status(httpStatus.UNAUTHORIZED);
       return res.json({ message: 'User does not exist' });
     }
 
@@ -84,7 +84,7 @@ export class UserController {
     const isVerified = await AuthHelper.checkVerification(req.body.phoneNumber, req.body.code);
 
     if (!isVerified) {
-      res.sendStatus(httpStatus.UNAUTHORIZED);
+      res.status(httpStatus.UNAUTHORIZED);
       return res.json({ message: 'Verification code not valid' });
     }
 
