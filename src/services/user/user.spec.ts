@@ -24,7 +24,7 @@ describe('## User', () => {
 
     await UserMatch.update({ createdAt:  yesterday }, { where: {} });
   });
-
+  // TODO: add test for 5am for example
   test('# updateAllUnavailableFromYesterdayToUnchecked should update all unchecked', async () => {
     await UserService.updateAllUnavailableFromYesterdayToUnchecked();
     const userMatches = await UserMatch.findAll({ where: {status: MatchStatus.UNCHECKED }});

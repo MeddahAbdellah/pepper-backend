@@ -30,7 +30,7 @@ app.use((req: any, _res: any, next: () => void) => {
 
 app.use('/api/', routes);
 
-app.listen(process.env.PORT as unknown as number || 7550, '192.168.1.39' ,() => {
+app.listen(process.env.PORT as unknown as number || 7550 ,() => {
   runJobs();
   console.log(gradient.pastel.multiline(figlet.textSync('Pepper')));
   console.log(`Https server running on port ${process.env.PORT as string || 7550}`);

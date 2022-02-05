@@ -4,6 +4,8 @@ import casual from 'casual';
 
 casual.define('img', () => ({ uri: 'https://picsum.photos/200/300' }));
 casual.define('gender', () => casual.boolean ? Gender.MAN : Gender.WOMAN );
+casual.define('phoneNumber', () => casual.numerify('+336########') );
+casual.define('product', () => ({ name: casual.word, price: casual.integer(3, 20) }) );
 casual.define('match_status', () => [
   MatchStatus.ACCEPTED,
   MatchStatus.UNAVAILABLE,
@@ -15,7 +17,7 @@ const createFakeUser = async (): Promise<User> => {
   const user = await User.create({
     name: casual.first_name,
     gender: (casual as unknown as any).gender,
-    phoneNumber: casual.phone,
+    phoneNumber: (casual as unknown as any).phoneNumber,
     address: casual.address,
     description: casual.description,
     job: casual.company_name,

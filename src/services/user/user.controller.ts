@@ -164,6 +164,8 @@ export class UserController {
     return res.json({ matches: normalizedMatches });
   }
 
+
+  // TODO: Test this route
   @validation(Joi.object({
     matchId: Joi.number().required(),
   }))
@@ -175,7 +177,7 @@ export class UserController {
       return res.json({ message: 'User does not exist' });
     }
 
-    await UserMatch.update({ status: MatchStatus.ACCEPTED }, { where: { [Op.and]: [{ UserId: req.user.id }, { MatchId: req.body.matchId }] } });
+    await UserMatch.destroy({ where: { [Op.and]: [{ UserId: req.user.id }, { MatchId: req.body.matchId }] } });
 
     const normalizedMatches = await UserService.getUserMatches(user);
     return res.json({ matches: normalizedMatches });
