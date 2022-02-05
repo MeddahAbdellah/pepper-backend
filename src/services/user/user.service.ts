@@ -41,7 +41,7 @@ export class UserService {
   }
 
   public static async updateAllUnavailableFromYesterdayToUnchecked(): Promise<void> {
-    const todayFirstHour = moment().startOf('day').add(6, 'hours');
+    const todayFirstHour = moment().startOf('day').add(6, 'hours').toDate();
     await UserMatch.update(
       { status: MatchStatus.UNCHECKED },
       { where: { 
