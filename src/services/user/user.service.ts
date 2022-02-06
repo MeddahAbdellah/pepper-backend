@@ -1,4 +1,4 @@
-import { User, UserMatch } from "orms";
+import { User, UserMatch, Party } from "orms";
 import { normalizeUserParties, normalizeUserMatches } from 'services/user/user.helper';
 import { IParty, IMatch, MatchStatus } from 'models/types';
 import { Op } from 'sequelize';
@@ -7,6 +7,25 @@ import moment from 'moment';
 export class UserService {
   public static async getUserParties(user: User): Promise<IParty[]> {
     const parties = await user.getParties();
+    const partiesWithOrganizers = await Promise.all(
+      await parties.map(async (currentParty) => {
+        const organizer = await currentParty.getOrganizer();
+        return { ...currentParty.get({ plain: true }), ...organizer.get({ plain: true }) };
+      })
+    );
+    const normalizedParties = normalizeUserParties(partiesWithOrganizers);
+    return normalizedParties;
+  }
+
+  public static async getPartiesUserCanGoTo(user: User): Promise<IParty[]> {
+    const userParties = await user.getParties();
+    const parties = await Party.findAll({ where: {
+        id: {
+            [Op.notIn]: userParties.map((userParty) => userParty.id),
+        }
+      }
+    });
+
     const partiesWithOrganizers = await Promise.all(
       await parties.map(async (currentParty) => {
         const organizer = await currentParty.getOrganizer();

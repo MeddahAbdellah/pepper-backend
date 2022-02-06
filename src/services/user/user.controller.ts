@@ -195,6 +195,19 @@ export class UserController {
     return res.json({ parties: normalizedParties });
   }
 
+  // TODO: add pagination
+  @validation(Joi.object({}))
+  public static async getPartiesThatUserCanGoTo(req: UserRequest, res: Response): Promise<Response<{ parties: Party[] }>> {
+    const user = await User.findOne({ where: { id: req.user.id }});
+
+    if (!user) {
+      res.status(httpStatus.NOT_FOUND);
+      return res.json({ message: 'User does not exist' });
+    }
+    const normalizedParties = await UserService.getPartiesUserCanGoTo(user);
+    return res.json({ parties: normalizedParties });
+  }
+
   @validation(Joi.object({
     partyId: Joi.number().required(),
   }))
