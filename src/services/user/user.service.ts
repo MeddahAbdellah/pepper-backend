@@ -10,7 +10,7 @@ export class UserService {
     const partiesWithOrganizers = await Promise.all(
       await parties.map(async (currentParty) => {
         const organizer = await currentParty.getOrganizer();
-        return { ...currentParty.get({ plain: true }), ...organizer.get({ plain: true }) };
+        return { ...organizer.get({ plain: true }), ...currentParty.get({ plain: true }) };
       })
     );
     const normalizedParties = normalizeUserParties(partiesWithOrganizers);
@@ -29,7 +29,7 @@ export class UserService {
     const partiesWithOrganizers = await Promise.all(
       await parties.map(async (currentParty) => {
         const organizer = await currentParty.getOrganizer();
-        return { ...currentParty.get({ plain: true }), ...organizer.get({ plain: true }) };
+        return { ...organizer.get({ plain: true }), ...currentParty.get({ plain: true }) };
       })
     );
     const normalizedParties = normalizeUserParties(partiesWithOrganizers);

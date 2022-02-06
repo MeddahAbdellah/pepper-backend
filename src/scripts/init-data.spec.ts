@@ -1,4 +1,3 @@
-import casual from 'casual';
 import { User, Organizer, Party } from 'orms';
 import { syncDbModels } from 'orms/pepperDb';
 import { fake, createFakeUser } from 'helpers/fake';
@@ -33,7 +32,7 @@ describe('## Init Data', () => {
           try {
             // TODO: add more realistic cases
             // library does not have typing for passing through
-            const status = (casual as unknown as any).match_status;
+            const status = (fake as unknown as any).match_status;
             //@ts-ignore
             await user.addMatch(users[matchKey], { through: { status }});
             //@ts-ignore
@@ -49,10 +48,10 @@ describe('## Init Data', () => {
       title: fake.title,
       location: fake.address,
       description: fake.description,
-      imgs: [(casual as unknown as any).img, (casual as unknown as any).img, (casual as unknown as any).img],
+      imgs: [(fake as unknown as any).img, (fake as unknown as any).img, (fake as unknown as any).img],
       price: fake.integer(0, 100),
-      foods: [fake.word, fake.word, fake.word],
-      drinks: [fake.word, fake.word, fake.word],
+      foods: [(fake as unknown as any).product, (fake as unknown as any).product, (fake as unknown as any).product],
+      drinks: [(fake as unknown as any).product, (fake as unknown as any).product, (fake as unknown as any).product],
     }));
 
     organizers = await Promise.all(

@@ -35,8 +35,8 @@ const createFakePartyWithItsOrganizer = async (): Promise<Party> => {
     description: casual.description,
     imgs: [(casual as unknown as any).img, (casual as unknown as any).img, (casual as unknown as any).img],
     price: casual.integer(0, 100),
-    foods: [casual.word, casual.word, casual.word],
-    drinks: [casual.word, casual.word, casual.word],
+    foods: [(casual as unknown as any).product, (casual as unknown as any).product, (casual as unknown as any).product],
+    drinks: [(casual as unknown as any).product, (casual as unknown as any).product, (casual as unknown as any).product]
   });
 
   const party = await Party.create({
