@@ -48,7 +48,7 @@ describe('## Init Data', () => {
       title: fake.title,
       location: fake.address,
       description: fake.description,
-      imgs: [(fake as unknown as any).img, (fake as unknown as any).img, (fake as unknown as any).img],
+      imgs: [(fake as unknown as any).bar, (fake as unknown as any).bar, (fake as unknown as any).bar],
       price: fake.integer(0, 100),
       foods: [(fake as unknown as any).product, (fake as unknown as any).product, (fake as unknown as any).product],
       drinks: [(fake as unknown as any).product, (fake as unknown as any).product, (fake as unknown as any).product],

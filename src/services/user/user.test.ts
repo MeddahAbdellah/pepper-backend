@@ -49,7 +49,7 @@ describe('## User', () => {
         address: fake.address,
         description: fake.description,
         job: fake.company_name,
-        imgs: [(fake as unknown as any).img, (fake as unknown as any).img, (fake as unknown as any).img],
+        imgs: [(fake as unknown as any).portrait, (fake as unknown as any).portrait, (fake as unknown as any).portrait],
         interests: [fake.word, fake.word, fake.word],
       };
 

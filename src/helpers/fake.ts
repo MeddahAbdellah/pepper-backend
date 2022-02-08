@@ -2,7 +2,8 @@ import { User, Party, Organizer } from "orms";
 import { Gender, MatchStatus } from 'models/types';
 import casual from 'casual';
 
-casual.define('img', () => ({ uri: 'https://picsum.photos/200/300' }));
+casual.define('portrait', () => ({ uri: `https://source.unsplash.com/collection/9948714?${casual.integer(1, 100)}` }));
+casual.define('bar', () => ({ uri: `https://source.unsplash.com/collection/3639161?${casual.integer(1, 20)}` }));
 casual.define('gender', () => casual.boolean ? Gender.MAN : Gender.WOMAN );
 casual.define('phoneNumber', () => casual.numerify('+336########') );
 casual.define('product', () => ({ name: casual.word, price: casual.integer(3, 20) }) );
@@ -21,7 +22,7 @@ const createFakeUser = async (): Promise<User> => {
     address: casual.address,
     description: casual.description,
     job: casual.company_name,
-    imgs: [(casual as unknown as any).img, (casual as unknown as any).img, (casual as unknown as any).img],
+    imgs: [(casual as unknown as any).portrait, (casual as unknown as any).portrait, (casual as unknown as any).portrait],
     interests: [casual.word, casual.word, casual.word],
   });
 
@@ -33,7 +34,7 @@ const createFakePartyWithItsOrganizer = async (): Promise<Party> => {
     title: casual.title,
     location: casual.address,
     description: casual.description,
-    imgs: [(casual as unknown as any).img, (casual as unknown as any).img, (casual as unknown as any).img],
+    imgs: [(casual as unknown as any).bar, (casual as unknown as any).bar, (casual as unknown as any).bar],
     price: casual.integer(0, 100),
     foods: [(casual as unknown as any).product, (casual as unknown as any).product, (casual as unknown as any).product],
     drinks: [(casual as unknown as any).product, (casual as unknown as any).product, (casual as unknown as any).product]
