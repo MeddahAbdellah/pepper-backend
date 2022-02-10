@@ -1,13 +1,12 @@
 import { Request, Response } from 'express';
 import Joi from 'joi';
 import { validation } from 'helpers/helpers';
-import { User, Party, UserMatch } from 'orms';
+import { User, Party } from 'orms';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
 import { IUser, MatchStatus, Gender } from 'models/types';
 import _ from 'lodash';
 import { UserService } from 'services/user/user.service';
-import { Op } from 'sequelize';
 import 'dotenv/config';
 import AuthHelper from 'helpers/auth';
 
@@ -118,6 +117,7 @@ export class UserController {
     return res.json({ matches: normalizedMatches });
   }
 
+  // TODO: test adding match removing it and add it again
   @validation(Joi.object({
     matchId: Joi.number().required(),
   }))
@@ -171,13 +171,15 @@ export class UserController {
   }))
   public static async deleteMatch(req: UserRequest, res: Response): Promise<Response<{ matches: User[] }>> {
     const user = await User.findOne({ where: { id: req.user.id } });
+    const match = await User.findOne({ where: { id: req.body.matchId } });
 
-    if (!user) {
+    if (!user || !match) {
       res.status(httpStatus.NOT_FOUND);
-      return res.json({ message: 'User does not exist' });
+      return res.json({ message: 'User or Match does not exist' });
     }
 
-    await UserMatch.destroy({ where: { [Op.and]: [{ UserId: req.user.id }, { MatchId: req.body.matchId }] } });
+    user.removeMatch(match);
+    match.removeMatch(user);
 
     const normalizedMatches = await UserService.getUserMatches(user);
     return res.json({ matches: normalizedMatches });

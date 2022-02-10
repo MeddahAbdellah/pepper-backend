@@ -35,6 +35,7 @@ class User extends Model {
   public addMatch!: HasManyAddAssociationMixin<User, number>;
   public hasMatch!: HasManyHasAssociationMixin<User, number>;
   public countMatches!: HasManyCountAssociationsMixin;
+  public removeMatch!: HasManyRemoveAssociationMixin<User, number>;
 
   public getParties!: HasManyGetAssociationsMixin<Party>;
   public addParty!: HasManyAddAssociationMixin<Party, number>;
@@ -50,7 +51,7 @@ const initUser = (sequelize: Sequelize) => {
       allowNull: false,
       defaultValue: MatchStatus.UNAVAILABLE,
     },
-  }, { sequelize, paranoid: true });
+  }, { sequelize, paranoid: false });
 
   User.init({
     id: {
@@ -95,7 +96,7 @@ const initUser = (sequelize: Sequelize) => {
 
 const associateUser = () => {
   User.belongsToMany(User, { through: UserMatch, as: 'Matches' });
-  User.belongsToMany(Party, { through: { model: 'UserParties', paranoid: true }, as: 'Parties' });
+  User.belongsToMany(Party, { through: { model: 'UserParties', paranoid: false }, as: 'Parties' });
 }
 
 export { initUser, associateUser, User, UserMatch };
