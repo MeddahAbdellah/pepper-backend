@@ -9,6 +9,7 @@ import _ from 'lodash';
 import { UserService } from 'services/user/user.service';
 import 'dotenv/config';
 import AuthHelper from 'helpers/auth';
+import { fake } from 'helpers/fake';
 
 interface UserRequest extends Request {
   user: User
@@ -19,8 +20,9 @@ export class UserController {
     phoneNumber: Joi.string().required(),
   }))
   public static async createLoginVerificationAndCheckIfUserExisits(req: Request, res: Response): Promise<Response<{ userExists: boolean }>> {
-    const user = await User.findOne({ where: { phoneNumber: req.body.phoneNumber }, raw: true});
-    await AuthHelper.createVerification(req.body.phoneNumber);
+    const user = await User.findOne({ where: { phoneNumber: req.query.phoneNumber }, raw: true});
+    // FIX: fix type
+    await AuthHelper.createVerification(req.query.phoneNumber as string);
     return res.json({ userExists: !!user });
   }
 
@@ -32,8 +34,8 @@ export class UserController {
     address: Joi.string().required(),
     description: Joi.string().required(),
     job: Joi.string().required(),
-    imgs: Joi.array().items({ uri: Joi.string() }),
-    interests: Joi.array().items(Joi.string()),
+    imgs: Joi.array().items({ uri: Joi.string() }).optional(),
+    interests: Joi.array().items(Joi.string()).optional(),
   }))
   public static async subscribe(req: Request, res: Response): Promise<Response<{ token: string }>> {
     const isVerified = await AuthHelper.checkVerification(req.body.phoneNumber, req.body.code);
@@ -50,8 +52,9 @@ export class UserController {
       address: req.body.address,
       description: req.body.description,
       job: req.body.job,
-      imgs: req.body.imgs,
-      interests: req.body.interests,
+      // TODO: make them obligatory
+      imgs: req.body.imgs ? req.body.imgs : [(fake as unknown as any).portrait, (fake as unknown as any).portrait, (fake as unknown as any).portrait],
+      interests: req.body.interests ? req.body.interests : [fake.word, fake.word, fake.word],
     });
 
     const user = await User.findOne({ where: { phoneNumber: req.body.phoneNumber }, raw: true});

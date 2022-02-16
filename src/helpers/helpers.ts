@@ -1,6 +1,7 @@
 import { RequestHandler } from 'express';
 import Joi from 'joi';
 import httpStatus from 'http-status';
+import _ from 'lodash';
 
 export function validation(schema: Joi.Schema) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -12,11 +13,12 @@ export function validation(schema: Joi.Schema) {
 
 function getValidationHandler(schema: Joi.Schema): RequestHandler {
   return (req: any, res: any, next: any) => {
-    const isValid = schema.validate(req.body ?? req.query);
+    const isValid = schema.validate(_.isEmpty(req.body) ? req.query : req.body);
     if (isValid.error) {
+      console.log('Error at Validation', isValid.error.details[0].message);
       res.status(httpStatus.BAD_REQUEST);
       res.json({
-        message: isValid.error,
+        message: isValid.error.details[0].message,
       });
       return;
     }

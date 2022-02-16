@@ -24,6 +24,8 @@ app.use((_req: any, res: any, next: () => void) => {
 
 app.use((req: any, _res: any, next: () => void) => {
   console.log('Requeset Body: ', req.body);
+  console.log('Requeset Method: ', req.method);
+  console.log('Requeset Url: ', req.originalUrl);
   console.log('Requeset Headers: ', req.headers);
   next();
 });
