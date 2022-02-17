@@ -12,6 +12,9 @@ enum TwilioVerificationStatus {
 }
 
 const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const localCode = '123456';
+const twilioChannel = 'sms';
+
 export default class AuthHelper {
 
   public static async createVerification(phoneNumber: string): Promise<void> {
@@ -25,13 +28,13 @@ export default class AuthHelper {
 
     const verification = await twilioClient.verify.services(process.env.TWILIO_SERVICE_ID)
              .verifications
-             .create({to: phoneNumber, channel: 'sms'});
+             .create({to: phoneNumber, channel: twilioChannel});
     console.log('Twilio verification', verification);
   }
 
   public static async checkVerification(phoneNumber: string, code: string): Promise<boolean> {
     if (EnvHelper.isLocal()) {
-      return true;
+      return code === localCode;
     }
 
     if (!process.env.TWILIO_SERVICE_ID) {

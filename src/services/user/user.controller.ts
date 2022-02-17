@@ -34,6 +34,7 @@ export class UserController {
     address: Joi.string().required(),
     description: Joi.string().required(),
     job: Joi.string().required(),
+    // TODO: make them obligatory
     imgs: Joi.array().items({ uri: Joi.string() }).optional(),
     interests: Joi.array().items(Joi.string()).optional(),
   }))
@@ -67,6 +68,7 @@ export class UserController {
     if (!process.env.JWT_KEY) {
       throw 'JWT key not provided';
     }
+
     const token = jwt.sign(user, process.env.JWT_KEY);
     return res.json({ token });
   }

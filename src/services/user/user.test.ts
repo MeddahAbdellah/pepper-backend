@@ -87,14 +87,14 @@ describe('## User', () => {
     });
 
     test('should be able to query info with the right token', async () => {
-      const { user } = (await request(app).get(`/api/user/info`).
+      const { user } = (await request(app).get(`/api/user/`).
         set('Authorization', tokenOfUser1).
         expect(httpStatus.OK)).body;
       expect(user1.id).toEqual(user.id);
     });
 
     test('should NOT be able to query info with the wrong token', async () => {
-      await request(app).get(`/api/user/info`).
+      await request(app).get(`/api/user/`).
         set('Authorization', 'wrongToken').
         expect(httpStatus.UNAUTHORIZED);
     });
