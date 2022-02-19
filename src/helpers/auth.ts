@@ -17,7 +17,7 @@ const twilioChannel = 'sms';
 
 export default class AuthHelper {
 
-  public static async createVerification(phoneNumber: string): Promise<void> {
+  public static async createVerification(phoneNumber: string, countryPrefix: string = '+33'): Promise<void> {
     if (EnvHelper.isLocal()) {
       return;
     }
@@ -28,11 +28,11 @@ export default class AuthHelper {
 
     const verification = await twilioClient.verify.services(process.env.TWILIO_SERVICE_ID)
              .verifications
-             .create({to: phoneNumber, channel: twilioChannel});
+             .create({to: `${countryPrefix}${phoneNumber.substring(1)}`, channel: twilioChannel});
     console.log('Twilio verification', verification);
   }
 
-  public static async checkVerification(phoneNumber: string, code: string): Promise<boolean> {
+  public static async checkVerification(phoneNumber: string, code: string, countryPrefix: string = '+33'): Promise<boolean> {
     if (EnvHelper.isLocal()) {
       return code === localCode;
     }
@@ -43,7 +43,7 @@ export default class AuthHelper {
 
     const verificationCheck = await twilioClient.verify.services(process.env.TWILIO_SERVICE_ID)
       .verificationChecks
-      .create({to: phoneNumber, code});
+      .create({to: `${countryPrefix}${phoneNumber.substring(1)}`, code});
 
     console.log('Twilio verificationCheck', verificationCheck);
 
