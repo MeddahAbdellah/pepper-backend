@@ -13,11 +13,13 @@ import 'dotenv/config';
 describe('## User', () => {
   let user1: User;
   let user2: User;
+  let user3: User;
   let party: Party;
   beforeAll(async () => {
     await syncDbModels();
     user1 = await createFakeUser();
     user2 = await createFakeUser();
+    user3 = await createFakeUser();
     party = await createFakePartyWithItsOrganizer();
   });
 
@@ -28,16 +30,16 @@ describe('## User', () => {
     });
   
     test('should NOT be able to login if phoneNumber does not exist', async () => {
-      await request(app).post('/api/user/login').send({ phoneNumber: '0000000000', code: '000000' }).expect(httpStatus.UNAUTHORIZED);
+      await request(app).post('/api/user/login').send({ phoneNumber: '0000000000', code: '123456' }).expect(httpStatus.UNAUTHORIZED);
     });
 
     test('should be able to see if user with phoneNumber does NOT exists if he actually does NOT exist', async () => {
-      const { userExists } = (await request(app).get('/api/user/login').send({ phoneNumber: '0000000000' }).expect(httpStatus.OK)).body;
+      const { userExists } = (await request(app).get('/api/user/login').query({ phoneNumber: '0000000000' }).expect(httpStatus.OK)).body;
       expect(userExists).toBe(false);
     });
 
     test('should be able to see if user with phoneNumber exists if he actually does exist', async () => {
-      const { userExists } = (await request(app).get('/api/user/login').send({ phoneNumber: user1.phoneNumber }).expect(httpStatus.OK)).body;
+      const { userExists } = (await request(app).get('/api/user/login').query({ phoneNumber: user1.phoneNumber }).expect(httpStatus.OK)).body;
       expect(userExists).toBe(true);
     });
 
@@ -53,7 +55,7 @@ describe('## User', () => {
         interests: [fake.word, fake.word, fake.word],
       };
 
-      const { token } = (await request(app).put('/api/user/login').send({ ...userInfo, code: '000000' }).expect(httpStatus.OK)).body;
+      const { token } = (await request(app).put('/api/user/login').send({ ...userInfo, code: '123456' }).expect(httpStatus.OK)).body;
       const subscribedUser = await User.findOne({ where: { phoneNumber: '0000000000'}}) as unknown as User;
       
       if (!process.env.JWT_KEY) {
@@ -65,7 +67,7 @@ describe('## User', () => {
     });
   
     test('should be able to login if phoneNumber exists', async () => {
-      const { token } = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber, code: '000000' }).expect(httpStatus.OK)).body;
+      const { token } = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
       if (!process.env.JWT_KEY) {
         throw 'JWT key not provided';
       }
@@ -78,12 +80,15 @@ describe('## User', () => {
   describe('# Query user data', () => {
     let tokenOfUser1: string;
     let tokenOfUser2: string;
+    let tokenOfUser3: string;
 
     beforeAll(async () => {
-      const user1Login = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber, code: '000000' }).expect(httpStatus.OK)).body;
-      const user2Login = (await request(app).post('/api/user/login').send({ phoneNumber: user2.phoneNumber, code: '000000' }).expect(httpStatus.OK)).body;
+      const user1Login = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
+      const user2Login = (await request(app).post('/api/user/login').send({ phoneNumber: user2.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
+      const user3Login = (await request(app).post('/api/user/login').send({ phoneNumber: user3.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
       tokenOfUser1 = user1Login.token;
       tokenOfUser2 = user2Login.token;
+      tokenOfUser3 = user3Login.token;
     });
 
     test('should be able to query info with the right token', async () => {
@@ -91,6 +96,20 @@ describe('## User', () => {
         set('Authorization', tokenOfUser1).
         expect(httpStatus.OK)).body;
       expect(user1.id).toEqual(user.id);
+    });
+
+    test('should be able to update user', async () => {
+      const newInfo = { address: 'newAddress', job: 'newJob', description: 'newDescription' }
+      const { user } = (await request(app).put(`/api/user/`).
+        send(newInfo).
+        set('Authorization', tokenOfUser3).
+        expect(httpStatus.OK)).body;
+      expect({
+        address: user.address, 
+        job: user.job,
+        description: user.description,
+      }
+      ).toEqual(newInfo);
     });
 
     test('should NOT be able to query info with the wrong token', async () => {

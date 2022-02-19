@@ -109,6 +109,19 @@ export class UserController {
     return res.json({ user: _.omit(user, ['createdAt', 'updatedAt', 'deletedAt']) });
   }
 
+  @validation(Joi.object({
+    address: Joi.string().optional(),
+    description: Joi.string().optional(),
+    job: Joi.string().optional(),
+    imgs: Joi.array().items({ uri: Joi.string() }).optional(),
+    interests: Joi.array().items(Joi.string()).optional(),
+  }))
+  public static async updateUser(req: UserRequest, res: Response): Promise<Response<{ user: IUser }>> {
+    await User.update({ ...req.body }, { where:  { id: req.user.id }});
+    const user = await User.findOne({ where: { id: req.user.id }, raw: true });
+    return res.json({ user: _.omit(user, ['createdAt', 'updatedAt', 'deletedAt']) });
+  }
+
   @validation(Joi.object({}))
   public static async getMatches(req: UserRequest, res: Response): Promise<Response<{ matches: User[] }>> {
     const user = await User.findOne({ where: { id: req.user.id }});
