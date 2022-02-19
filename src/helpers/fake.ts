@@ -5,7 +5,7 @@ import casual from 'casual';
 casual.define('portrait', () => ({ uri: `https://source.unsplash.com/collection/9948714?${casual.integer(1, 100)}` }));
 casual.define('bar', () => ({ uri: `https://source.unsplash.com/collection/3639161?${casual.integer(1, 20)}` }));
 casual.define('gender', () => casual.boolean ? Gender.MAN : Gender.WOMAN );
-casual.define('phoneNumber', () => casual.numerify('00336########') );
+casual.define('phoneNumber', () => casual.numerify('06########') );
 casual.define('product', () => ({ name: casual.word, price: casual.integer(3, 20) }) );
 casual.define('match_status', () => [
   MatchStatus.ACCEPTED,
