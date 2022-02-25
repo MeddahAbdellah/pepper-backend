@@ -36,7 +36,7 @@ export class UserController {
     job: Joi.string().required(),
     // TODO: make them obligatory
     imgs: Joi.array().items({ uri: Joi.string() }).optional(),
-    interests: Joi.array().items(Joi.string()).optional(),
+    interests: Joi.array().items(Joi.string()),
   }))
   public static async subscribe(req: Request, res: Response): Promise<Response<{ token: string }>> {
     const isVerified = await AuthHelper.checkVerification(req.body.phoneNumber, req.body.code);
@@ -55,7 +55,7 @@ export class UserController {
       job: req.body.job,
       // TODO: make them obligatory
       imgs: req.body.imgs ? req.body.imgs : [(fake as unknown as any).portrait, (fake as unknown as any).portrait, (fake as unknown as any).portrait],
-      interests: req.body.interests ? req.body.interests : [fake.word, fake.word, fake.word],
+      interests: req.body.interests,
     });
 
     const user = await User.findOne({ where: { phoneNumber: req.body.phoneNumber }, raw: true});
