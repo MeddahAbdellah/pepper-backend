@@ -9,6 +9,7 @@ const app = express();
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({
+  limit: '25mb', // max file size
   extended: false
 }));
 // parse application/json
@@ -22,6 +23,7 @@ app.use((_req: any, res: any, next: () => void) => {
   next();
 });
 
+// TODO: put this in a helper
 app.use((req: any, _res: any, next: () => void) => {
   console.log('Requeset Body: ', req.body);
   console.log('Requeset Method: ', req.method);

@@ -1,7 +1,11 @@
-import { RequestHandler } from 'express';
+import 'dotenv/config';
+import { RequestHandler, Request } from 'express';
 import Joi from 'joi';
 import httpStatus from 'http-status';
 import _ from 'lodash';
+import formidable from 'formidable';
+import AWS from 'aws-sdk';
+import { v4 as uuidv4 } from 'uuid';
 
 export function validation(schema: Joi.Schema) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -34,4 +38,39 @@ export function checkParametersAndCallRoute(method: any): RequestHandler[] {
   };
 
   return [validation, methodCall];
+}
+
+export function parseFiles(req: Request): Promise<any> {
+  return new Promise((resolve) => {
+    const form = formidable({ multiples: true });
+    form.parse(req, (err: any, fields: any, _files: any) => {
+      if (err) {
+        throw err;
+      }
+      resolve(fields);
+    });
+  });
+}
+
+export function uploadToS3(file: any): Promise<any> {
+  return new Promise((resolve) => {
+    const s3 = new AWS.S3({
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    });
+    if (!process.env.AWS_BUCKET) {
+      throw 'Bucket not specified';
+    }
+    const params = {
+      Bucket: process.env.AWS_BUCKET,
+      Key: uuidv4(),
+      ContentType: 'image/jpeg',
+      Body: file,
+    };
+    s3.upload(params, (s3Err: any, data: any) => {
+      if (s3Err) throw s3Err;
+      console.log('File uploaded successfully at', data);
+      resolve(data.Location)
+    });
+  });
 }
