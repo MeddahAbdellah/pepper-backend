@@ -9,7 +9,6 @@ import _ from 'lodash';
 import { UserService } from 'services/user/user.service';
 import 'dotenv/config';
 import AuthHelper from 'helpers/auth';
-import { fake } from 'helpers/fake';
 
 interface UserRequest extends Request {
   user: User
@@ -34,8 +33,7 @@ export class UserController {
     address: Joi.string().required(),
     description: Joi.string().required(),
     job: Joi.string().required(),
-    // TODO: make them obligatory
-    imgs: Joi.array().items({ uri: Joi.string() }).optional(),
+    imgs: Joi.array().items({ uri: Joi.string() }),
     interests: Joi.array().items(Joi.string()),
   }))
   public static async subscribe(req: Request, res: Response): Promise<Response<{ token: string }>> {
@@ -53,8 +51,7 @@ export class UserController {
       address: req.body.address,
       description: req.body.description,
       job: req.body.job,
-      // TODO: make them obligatory
-      imgs: req.body.imgs ? req.body.imgs : [(fake as unknown as any).portrait, (fake as unknown as any).portrait, (fake as unknown as any).portrait],
+      imgs: req.body.imgs,
       interests: req.body.interests,
     });
 
@@ -181,7 +178,6 @@ export class UserController {
     const normalizedMatches = await UserService.getUserMatches(user);
     return res.json({ matches: normalizedMatches });
   }
-
 
   // TODO: Test this route
   @validation(Joi.object({

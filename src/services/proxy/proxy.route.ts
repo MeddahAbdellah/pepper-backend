@@ -1,6 +1,5 @@
 import express, { Router } from 'express';
 import { checkParametersAndCallRoute } from 'helpers/helpers';
-import { authorizeForUser } from 'acls/acl';
 import { ProxyController } from './proxy.controller';
 
 class ProxyRoutes {
@@ -12,7 +11,8 @@ class ProxyRoutes {
   }
 
   private _assignRoute() {
-    this._router.route('/s3').post(authorizeForUser,checkParametersAndCallRoute(ProxyController.uploadImageToS3));
+    // TODO: Add ACL also for S3
+    this._router.route('/s3').post(checkParametersAndCallRoute(ProxyController.uploadImageToS3));
   }
 }
 

@@ -9,7 +9,7 @@ const app = express();
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({
-  limit: '25mb', // max file size
+  limit: '10mb', // max file size
   extended: false
 }));
 // parse application/json

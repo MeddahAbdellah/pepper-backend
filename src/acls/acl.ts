@@ -15,15 +15,14 @@ const authorizeForUser = async (req: any, res: any, next: any) => {
     if (!user?.id) {
       throw 'Does not contain user';
     }
+    req.user = user;
+    next();
   } catch (e) {
     res.status(httpStatus.UNAUTHORIZED);
     res.json({
       message: `Invalid token: ${e}`,
     });
   }
-
-  req.user = user;
-  next();
 }
 
 export { authorizeForUser };

@@ -68,7 +68,7 @@ export function uploadToS3(file: any): Promise<any> {
       Body: file,
     };
     s3.upload(params, (s3Err: any, data: any) => {
-      if (s3Err) throw s3Err;
+      if (s3Err) { throw s3Err; } ;
       console.log('File uploaded successfully at', data);
       resolve(data.Location)
     });
