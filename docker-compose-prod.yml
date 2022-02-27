@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:11-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: pepper
+      POSTGRES_USER: pepper
+      POSTGRES_PASSWORD: sayfEnnar
+    ports:
+      - "127.0.0.1:5439:5432"
+    volumes:
+      - pgdata-11:/var/lib/postgresql/data
+    command: ["postgres", "-c", "log_min_duration_statement=200", "-c", "log_line_prefix=%t %a %p "]
+
+  server:
+    build: .
+    environment:
+      DB_PORT: 5432
+      DB_HOST: db
+    ports: 
+      - "80:7550"
+  
+volumes:
+  pgdata-11:

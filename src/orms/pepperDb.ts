@@ -6,8 +6,8 @@ if(!process.env.DB_NAME || !process.env.DB_USERNAME || !process.env.DB_PASSWORD)
 }
 
 const pepperDb = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
-  host: 'localhost',
-  port: 5439,
+  host: process.env.DB_HOST,
+  port:  Number(process.env.DB_PORT) || 5439,
   dialect: 'postgres',
   logQueryParameters: true,
 });

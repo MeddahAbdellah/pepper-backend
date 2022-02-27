@@ -33,6 +33,7 @@ app.use((req: any, _res: any, next: () => void) => {
 });
 
 app.use('/api/', routes);
+app.get('/health-check/', (_req: any, res: any) => res.json({ message: 'up'}));
 
 app.listen(process.env.PORT as unknown as number || 7550 ,() => {
   runJobs();

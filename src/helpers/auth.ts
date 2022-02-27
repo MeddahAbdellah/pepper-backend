@@ -17,7 +17,7 @@ const twilioChannel = 'sms';
 
 export default class AuthHelper {
 
-  public static async createVerification(phoneNumber: string, countryPrefix: string = '+33'): Promise<void> {
+  public static async createVerification(phoneNumber: string, countryPrefix = '+33'): Promise<void> {
     if (EnvHelper.isLocal()) {
       return;
     }
@@ -32,7 +32,7 @@ export default class AuthHelper {
     console.log('Twilio verification', verification);
   }
 
-  public static async checkVerification(phoneNumber: string, code: string, countryPrefix: string = '+33'): Promise<boolean> {
+  public static async checkVerification(phoneNumber: string, code: string, countryPrefix = '+33'): Promise<boolean> {
     if (EnvHelper.isLocal()) {
       return code === localCode;
     }
