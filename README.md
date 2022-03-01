@@ -1,3 +1,5 @@
+![Build](https://github.com/MeddahAbdellah/pepper-backend/actions/workflows/nodejs.yml/badge.svg)
+
 ## Getting Started
 To launch the project
 
