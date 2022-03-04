@@ -21,7 +21,7 @@ describe('## Party', () => {
     party2 = await createFakePartyWithItsOrganizer();
     await (await User.findOne({ where: { id: user.id }}))?.addParty(party1);
 
-    const { token } = (await request(app).post('/api/user/login').send({ phoneNumber: user.phoneNumber, code: '000000' }).expect(httpStatus.OK)).body;
+    const { token } = (await request(app).post('/api/user/login').send({ phoneNumber: user.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
     tokenOfUser1 = token;
   });
 

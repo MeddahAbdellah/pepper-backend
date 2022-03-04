@@ -4,6 +4,7 @@ import routes from 'routes';
 import { runJobs } from 'services/jobs';
 import figlet from 'figlet';
 import gradient from 'gradient-string';
+import EnvHelper from 'helpers/envHelper';
 
 const app = express();
 
@@ -34,11 +35,12 @@ app.use((req: any, _res: any, next: () => void) => {
 
 app.use('/api/', routes);
 app.get('/health-check/', (_req: any, res: any) => res.json({ message: 'up'}));
-
-app.listen(process.env.PORT as unknown as number || 7550 ,() => {
-  runJobs();
-  console.log(gradient.pastel.multiline(figlet.textSync('Pepper')));
-  console.log(`Https server running on port ${process.env.PORT as string || 7550}`);
-});
+if (!EnvHelper.isTest()) {
+  app.listen(process.env.PORT as unknown as number || 7550 ,() => {
+    runJobs();
+    console.log(gradient.pastel.multiline(figlet.textSync('Pepper')));
+    console.log(`Https server running on port ${process.env.PORT as string || 7550}`);
+  });
+}
 
 export default app;

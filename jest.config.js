@@ -11,6 +11,9 @@ module.exports = {
     "json",
     "node",
   ],
+  verbose: true,
+  maxWorkers: 1,
+  forceExit: true,
   testEnvironment: 'node',
   testMatch: [
     "<rootDir>/src/**/*.test.ts",

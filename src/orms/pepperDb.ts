@@ -9,7 +9,8 @@ const pepperDb = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, pro
   host: process.env.DB_HOST,
   port:  Number(process.env.DB_PORT) || 5439,
   dialect: 'postgres',
-  logQueryParameters: true,
+  logQueryParameters: false,
+  logging: false
 });
 
 const initDb = async () => {
