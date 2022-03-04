@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import httpStatus from 'http-status';
-import { Organizer, User } from 'orms';
 import 'dotenv/config';
+import { IOrganizer, IUser } from 'models/types';
 
 const authorizeForUser = async (req: any, res: any, next: any) => {
   let user;
@@ -10,7 +10,7 @@ const authorizeForUser = async (req: any, res: any, next: any) => {
       throw 'JWT key not provided';
     }
 
-    user = jwt.verify(req.headers.authorization, process.env.JWT_KEY) as User;
+    user = jwt.verify(req.headers.authorization, process.env.JWT_KEY) as IUser;
 
     if (!user?.id) {
       throw 'Does not contain user';
@@ -32,7 +32,7 @@ const authorizeForOrganize = async (req: any, res: any, next: any) => {
       throw 'JWT key not provided';
     }
 
-    organizer = jwt.verify(req.headers.authorization, process.env.JWT_KEY) as Organizer;
+    organizer = jwt.verify(req.headers.authorization, process.env.JWT_KEY) as IOrganizer;
 
     if (!organizer?.id) {
       throw 'Does not contain organizer';

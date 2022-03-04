@@ -30,18 +30,18 @@ const createFakeUser = async (): Promise<User> => {
   return user.get({ plain: true });
 }
 
-const createFakeOrganizer = async (): Promise<Organizer> => {
+const createFakeOrganizer = async (password = casual.password as any): Promise<Organizer> => {
   const organizer = await Organizer.create({
     phoneNumber: (casual as unknown as any).phoneNumber,
     userName: casual.username,
-    password: sha256(casual.password as any).toString(),
+    password: sha256(password).toString(),
     title: casual.title,
     location: casual.address,
     description: casual.description,
     imgs: [(casual as unknown as any).portrait, (casual as unknown as any).portrait, (casual as unknown as any).portrait],
     foods: [(casual as unknown as any).product, (casual as unknown as any).product, (casual as unknown as any).product],
     drinks: [(casual as unknown as any).product, (casual as unknown as any).product, (casual as unknown as any).product],
-    status: OrganizerStatus.Accepted
+    status: OrganizerStatus.Pending
   });
 
   return organizer.get({ plain: true });

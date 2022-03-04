@@ -49,7 +49,7 @@ export class OrganizerController {
       imgs: req.body.imgs,
       foods: req.body.foods,
       drinks: req.body.drinks,
-      status: OrganizerStatus.Accepted
+      status: OrganizerStatus.Pending
     });
 
     const organizer = await Organizer.findOne({ 
@@ -83,9 +83,9 @@ export class OrganizerController {
     }
 
     // TO-DO : update policy for allowed logins (maybe pending or Accepted)
-    const isVerified = organizer.status === OrganizerStatus.Accepted;
+    const isAuthorized = organizer.status !== OrganizerStatus.Rejected;
 
-    if (!isVerified) {
+    if (!isAuthorized) {
       res.status(httpStatus.UNAUTHORIZED);
       return res.json({ message: 'Organizer not validated yet' });
     }
@@ -106,6 +106,5 @@ export class OrganizerController {
     }
     return res.json({ organizer: _.omit(organizer, ['createdAt', 'updatedAt', 'deletedAt','password']) });
   }
-
 
 } 
