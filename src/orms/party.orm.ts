@@ -5,6 +5,7 @@ class Party extends Model {
   public id!: number;
   public theme!: string;
   public date!: Date;
+  public price!: number;
   public people!: number;
   public minAge!: number;
   public maxAge!: number;
@@ -16,7 +17,6 @@ class Party extends Model {
   public getOrganizer!: BelongsToGetAssociationMixin<Organizer>;
   public setOrganizer!: BelongsToSetAssociationMixin<Organizer, number>; 
 }
-
 const initParty = (sequelize: Sequelize) => {
   Party.init({
     id: {
@@ -30,6 +30,10 @@ const initParty = (sequelize: Sequelize) => {
     },
     date: {
       type: DataTypes.DATE,
+      allowNull: false,
+    },
+    price: {
+      type: DataTypes.FLOAT,
       allowNull: false,
     },
     people: {
