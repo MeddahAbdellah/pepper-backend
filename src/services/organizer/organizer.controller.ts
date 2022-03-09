@@ -107,4 +107,19 @@ export class OrganizerController {
     return res.json({ organizer: _.omit(organizer, ['createdAt', 'updatedAt', 'deletedAt','password']) });
   }
 
+
+  @validation(Joi.object({
+    title: Joi.string().optional(),
+    location: Joi.string().optional(),
+    description: Joi.string().optional(),
+    imgs: Joi.array().items({ uri: Joi.string() }).optional(),
+    foods: Joi.array().items({ name: Joi.string(), price:Joi.number() }).optional(),
+    drinks: Joi.array().items({ name: Joi.string(), price:Joi.number() }).optional()
+  }))
+  public static async updateOrganizer(req: OrganizerRequest, res: Response): Promise<Response<{ organizer: IOrganizer }>> {
+    await Organizer.update({ ...req.body }, { where:  { id: req.organizer.id }});
+    const organizer = await Organizer.findOne({ where: { id: req.organizer.id }, raw: true });
+    return res.json({ organizer: _.omit(organizer, ['createdAt', 'updatedAt', 'deletedAt','password']) });
+  }
+
 } 

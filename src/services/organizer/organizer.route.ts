@@ -13,6 +13,7 @@ class OrganizerRoutes {
 
   private _assignRoute() {
     this._router.route('/').get(authorizeForOrganize,checkParametersAndCallRoute(OrganizerController.getOrganizer));
+    this._router.route('/').put(authorizeForOrganize,checkParametersAndCallRoute(OrganizerController.updateOrganizer));
     this._router.route('/login').put(checkParametersAndCallRoute(OrganizerController.subscribe));
     this._router.route('/login').post(checkParametersAndCallRoute(OrganizerController.login));
   }

@@ -102,5 +102,29 @@ describe('## organizer', () => {
         set('Authorization', 'wrongToken').
         expect(httpStatus.UNAUTHORIZED);
     });
+
+
+  });
+
+  describe('# Update Oganizer', () => {
+
+    test('should be able to update organizer', async () => {
+      const newInfo = { 
+        title: fake.title,
+        location: fake.address,
+        description: fake.description,
+      }
+      const { token } = (await request(app).post('/api/organizer/login').send({ userName: organizerObject.userName, password: organizerPassword}).expect(httpStatus.OK)).body;
+      const { organizer } = (await request(app).put(`/api/organizer/`).
+        send(newInfo).
+        set('Authorization', token).
+        expect(httpStatus.OK)).body;
+      expect({
+        title: organizer.title, 
+        location: organizer.location,
+        description: organizer.description,
+      }
+      ).toEqual(newInfo);
+    });
   });
 });

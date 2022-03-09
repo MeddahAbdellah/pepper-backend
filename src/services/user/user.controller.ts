@@ -4,7 +4,7 @@ import { validation } from 'helpers/helpers';
 import { User, Party } from 'orms';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
-import { IUser, MatchStatus, Gender } from 'models/types';
+import { IUser, MatchStatus, Gender, IParty } from 'models/types';
 import _ from 'lodash';
 import { UserService } from 'services/user/user.service';
 import 'dotenv/config';
@@ -200,7 +200,7 @@ export class UserController {
   }
 
   @validation(Joi.object({}))
-  public static async getParties(req: UserRequest, res: Response): Promise<Response<{ parties: Party[] }>> {
+  public static async getParties(req: UserRequest, res: Response): Promise<Response<{ parties: IParty[] }>> {
     const user = await User.findOne({ where: { id: req.user.id }});
 
     if (!user) {
@@ -213,7 +213,7 @@ export class UserController {
 
   // TODO: add pagination
   @validation(Joi.object({}))
-  public static async getPartiesThatUserCanGoTo(req: UserRequest, res: Response): Promise<Response<{ parties: Party[] }>> {
+  public static async getPartiesThatUserCanGoTo(req: UserRequest, res: Response): Promise<Response<{ parties: IParty[] }>> {
     const user = await User.findOne({ where: { id: req.user.id }});
 
     if (!user) {
@@ -227,7 +227,7 @@ export class UserController {
   @validation(Joi.object({
     partyId: Joi.number().required(),
   }))
-  public static async addParty(req: UserRequest, res: Response): Promise<Response<{ parties: Party[] }>> {
+  public static async addParty(req: UserRequest, res: Response): Promise<Response<{ parties: IParty[] }>> {
     const party = await Party.findOne({ where: { id: req.body.partyId } });
     const user = await User.findOne({ where: { id: req.user.id }});
 
@@ -243,7 +243,7 @@ export class UserController {
   @validation(Joi.object({
     partyId: Joi.number().required(),
   }))
-  public static async cancelParty(req: UserRequest, res: Response): Promise<Response<{ parties: Party[] }>> {
+  public static async cancelParty(req: UserRequest, res: Response): Promise<Response<{ parties: IParty[] }>> {
     const party = await Party.findOne({ where: { id: req.body.partyId } });
     const user = await User.findOne({ where: { id: req.user.id }});
 

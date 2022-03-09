@@ -75,4 +75,20 @@ const createFakePartyWithItsOrganizer = async (): Promise<Party> => {
   return party;
 }
 
-export { createFakePartyWithItsOrganizer, createFakeUser, createFakeOrganizer, casual as fake };
+const createFakeParty = async (organizer: Organizer): Promise<Party> => {
+
+  const organizerObject = await Organizer.findOne({ where: { id: organizer.id }, raw: false });
+
+  const party = await Party.create({
+    theme: casual.title,
+    date: new Date(casual.date('YYYY-MM-DD')),
+    price: casual.integer(0, 100),
+    people: casual.integer(20, 40),
+    minAge: casual.integer(18, 21),
+    maxAge: casual.integer(28, 30),
+  });
+  await organizerObject?.addParty(party)
+  return party;
+}
+
+export { createFakePartyWithItsOrganizer, createFakeUser, createFakeOrganizer, createFakeParty, casual as fake };
