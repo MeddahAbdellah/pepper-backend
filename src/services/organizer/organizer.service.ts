@@ -2,7 +2,7 @@ import { IParty } from "models/types";
 import { Organizer } from "orms";
 import { normalizeUserParties } from "services/user/user.helper";
 
-export class PartyService{
+export class OrganizerService{
   
   public static async getOrganizerParties(organizer: Organizer): Promise<IParty[]>{
 

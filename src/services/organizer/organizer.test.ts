@@ -2,21 +2,26 @@ import request from 'supertest';
 import app from 'index';
 import httpStatus from 'http-status';
 import { Organizer } from 'orms';
-import { createFakeOrganizer, fake } from 'helpers/fake';
+import { createFakeOrganizer, createFakeParty, fake } from 'helpers/fake';
 import { syncDbModels } from 'orms/pepperDb';
-import { IOrganizer } from 'models/types';
+import { IOrganizer, IParty } from 'models/types';
 import jwt from 'jsonwebtoken';
 import SHA256 from 'crypto-js/sha256';
+import casual from 'casual';
 
 describe('## organizer', () => {
 
   let organizerObject: Organizer;
-  const organizerPassword = fake.password;
+  let organizerObject2: Organizer;
+  const organizerPassword = casual.password;
+  let organizerToken: string;
 
   beforeAll(async () => {
     await syncDbModels();
 
     organizerObject  = await createFakeOrganizer(organizerPassword);
+    organizerObject2 = await createFakeOrganizer(organizerPassword);
+    organizerToken = (await request(app).post('/api/organizer/login').send({ userName: organizerObject2.userName, password: organizerPassword}).expect(httpStatus.OK)).body.token;
 
   });
 
@@ -127,4 +132,50 @@ describe('## organizer', () => {
       ).toEqual(newInfo);
     });
   });
+
+
+  describe('# organizer parties', () => {
+
+    test('Should be able to get organizer own parties', async() => {
+
+      const organizerTest = await createFakeOrganizer(organizerPassword)
+  
+      const p1 = await createFakeParty(organizerTest)
+      const p2 = await createFakeParty(organizerTest)
+  
+      const testToken = (await request(app).post('/api/organizer/login').
+      send({ userName: organizerTest.userName, password: organizerPassword}).expect(httpStatus.OK)).body.token;
+  
+      const  parties  = (await request(app).get(`/api/organizer/parties`).
+          set('Authorization', testToken).
+          expect(httpStatus.OK)).body.parties;
+  
+      expect(parties.length).toEqual(2);
+      expect(parties[0].id).toEqual(p2.id);
+      expect(parties[1].id).toEqual(p1.id);
+      
+    });
+  
+    test('Should be able to create new party for organizer', async() => {
+  
+      const partyTest = {
+        theme: casual.title,
+        date: new Date(casual.date('YYYY-MM-DD')),
+        price: casual.integer(0, 20),
+        people: casual.integer(20, 40),
+        minAge: casual.integer(20, 30),
+        maxAge: casual.integer(30, 50),
+      }
+  
+      const parties: IParty[] = (await request(app).post(`/api/organizer/party`).
+      send({...partyTest}).
+      set('Authorization', organizerToken).
+      expect(httpStatus.OK)).body.parties;
+  
+      expect(parties.length).toEqual(1);
+      expect(parties[0].theme).toEqual(partyTest.theme);
+      expect(parties[0].price).toEqual(partyTest.price);
+    });
+
+  })
 });

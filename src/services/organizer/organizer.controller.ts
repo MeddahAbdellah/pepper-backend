@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
 import Joi from 'joi';
 import { validation } from 'helpers/helpers';
-import { Organizer } from 'orms';
+import { Organizer, Party } from 'orms';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
 import { SHA256 } from 'crypto-js';
-import { IOrganizer, OrganizerStatus } from 'models/types';
+import { IOrganizer, IParty, OrganizerStatus } from 'models/types';
 import 'dotenv/config';
 import _ from 'lodash';
+import { OrganizerService } from 'services/organizer/organizer.service';
 
 interface OrganizerRequest extends Request {
   organizer: Organizer
@@ -120,6 +121,51 @@ export class OrganizerController {
     await Organizer.update({ ...req.body }, { where:  { id: req.organizer.id }});
     const organizer = await Organizer.findOne({ where: { id: req.organizer.id }, raw: true });
     return res.json({ organizer: _.omit(organizer, ['createdAt', 'updatedAt', 'deletedAt','password']) });
+  }
+
+
+  
+  @validation(Joi.object({
+    theme: Joi.string().required(),
+    date: Joi.date().required(),
+    price: Joi.number().required(),
+    people: Joi.number().required(),
+    minAge: Joi.number().required(),
+    maxAge: Joi.number().required(),
+  }))
+  public static async createNewparty(req: OrganizerRequest, res: Response): Promise<Response<{ parties: IParty[] }>> {
+    const organizer = await Organizer.findOne({ where: { id: req.organizer.id }});
+
+    if (!organizer) {
+      res.status(httpStatus.NOT_FOUND);
+      return res.json({ message: 'User does not exist' });
+    }
+
+    const party = await Party.create({
+      theme: req.body.theme,
+      date: req.body.date,
+      price: req.body.price,
+      people: req.body.people,
+      minAge: req.body.minAge,
+      maxAge: req.body.maxAge,
+    });
+
+    await organizer.addParty(party);
+    const normalizedParties = await OrganizerService.getOrganizerParties(organizer)
+    return res.json({ parties: normalizedParties });
+  }
+
+  @validation(Joi.object({}))
+  public static async getOrganizerParties(req: OrganizerRequest, res: Response): Promise<Response<{ parties: IParty[] }>> {
+    const organizer = await Organizer.findOne({ where: { id: req.organizer.id }});
+
+    if (!organizer) {
+      res.status(httpStatus.NOT_FOUND);
+      return res.json({ message: 'User does not exist' });
+    }
+
+    const normalizedParties = await OrganizerService.getOrganizerParties(organizer)
+    return res.json({ parties: normalizedParties });
   }
 
 } 
