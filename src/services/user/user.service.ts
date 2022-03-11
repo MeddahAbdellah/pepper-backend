@@ -1,5 +1,5 @@
 import { User, UserMatch, Party } from "orms";
-import { normalizeUserParties, normalizeUserMatches } from 'services/user/user.helper';
+import { normalizeParties, normalizeUserMatches } from 'services/user/user.helper';
 import { IParty, IMatch, MatchStatus } from 'models/types';
 import { Op } from 'sequelize';
 import moment from 'moment';
@@ -13,7 +13,7 @@ export class UserService {
         return { ...organizer.get({ plain: true }), ...currentParty.get({ plain: true }) };
       })
     );
-    const normalizedParties = normalizeUserParties(partiesWithOrganizers);
+    const normalizedParties = normalizeParties(partiesWithOrganizers);
     return normalizedParties;
   }
 
@@ -32,7 +32,7 @@ export class UserService {
         return { ...organizer.get({ plain: true }), ...currentParty.get({ plain: true }) };
       })
     );
-    const normalizedParties = normalizeUserParties(partiesWithOrganizers);
+    const normalizedParties = normalizeParties(partiesWithOrganizers);
     return normalizedParties;
   }
 

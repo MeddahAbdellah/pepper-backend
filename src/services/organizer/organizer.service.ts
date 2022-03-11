@@ -1,6 +1,6 @@
 import { IParty } from "models/types";
 import { Organizer } from "orms";
-import { normalizeUserParties } from "services/user/user.helper";
+import { normalizeParties } from "services/user/user.helper";
 
 export class OrganizerService{
   
@@ -12,7 +12,7 @@ export class OrganizerService{
         return { ...organizer.get({ plain: true }), ...currentParty.get({ plain: true }) };
     })
     // reused since it produce IParty
-    const normalizedParties = normalizeUserParties(partiesWithOrganizers);
+    const normalizedParties = normalizeParties(partiesWithOrganizers);
     return normalizedParties;
   }
 

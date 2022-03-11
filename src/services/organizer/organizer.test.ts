@@ -146,7 +146,7 @@ describe('## organizer', () => {
       const testToken = (await request(app).post('/api/organizer/login').
       send({ userName: organizerTest.userName, password: organizerPassword}).expect(httpStatus.OK)).body.token;
   
-      const  parties  = (await request(app).get(`/api/organizer/parties`).
+      const  parties  = (await request(app).get(`/api/organizer/party`).
           set('Authorization', testToken).
           expect(httpStatus.OK)).body.parties;
   
