@@ -1,6 +1,7 @@
 import { User, Party, Organizer } from "orms";
-import { Gender, MatchStatus } from 'models/types';
+import { Gender, MatchStatus, OrganizerStatus } from 'models/types';
 import casual from 'casual';
+import sha256 from 'crypto-js/sha256';
 
 casual.define('portrait', () => ({ uri: `https://source.unsplash.com/collection/9948714?${casual.integer(1, 100)}` }));
 casual.define('bar', () => ({ uri: `https://source.unsplash.com/collection/3639161?${casual.integer(1, 20)}` }));
@@ -29,20 +30,42 @@ const createFakeUser = async (): Promise<User> => {
   return user.get({ plain: true });
 }
 
+const createFakeOrganizer = async (password = casual.password as any): Promise<Organizer> => {
+  const organizer = await Organizer.create({
+    phoneNumber: (casual as unknown as any).phoneNumber,
+    userName: casual.username,
+    password: sha256(password).toString(),
+    title: casual.title,
+    location: casual.address,
+    description: casual.description,
+    imgs: [(casual as unknown as any).portrait, (casual as unknown as any).portrait, (casual as unknown as any).portrait],
+    foods: [(casual as unknown as any).product, (casual as unknown as any).product, (casual as unknown as any).product],
+    drinks: [(casual as unknown as any).product, (casual as unknown as any).product, (casual as unknown as any).product],
+    status: OrganizerStatus.Pending
+  });
+
+  return organizer.get({ plain: true });
+}
+
 const createFakePartyWithItsOrganizer = async (): Promise<Party> => {
   const organizer = await Organizer.create({
+
+    phoneNumber: (casual as unknown as any).phoneNumber,
+    userName: casual.username,
+    password: sha256(casual.password).toString(),
     title: casual.title,
     location: casual.address,
     description: casual.description,
     imgs: [(casual as unknown as any).bar, (casual as unknown as any).bar, (casual as unknown as any).bar],
-    price: casual.integer(0, 100),
     foods: [(casual as unknown as any).product, (casual as unknown as any).product, (casual as unknown as any).product],
-    drinks: [(casual as unknown as any).product, (casual as unknown as any).product, (casual as unknown as any).product]
+    drinks: [(casual as unknown as any).product, (casual as unknown as any).product, (casual as unknown as any).product],
+    status: OrganizerStatus.Accepted
   });
 
   const party = await Party.create({
     theme: casual.title,
     date: new Date(casual.date('YYYY-MM-DD')),
+    price: casual.integer(0, 100),
     people: casual.integer(20, 40),
     minAge: casual.integer(18, 21),
     maxAge: casual.integer(28, 30),
@@ -52,4 +75,20 @@ const createFakePartyWithItsOrganizer = async (): Promise<Party> => {
   return party;
 }
 
-export { createFakePartyWithItsOrganizer, createFakeUser, casual as fake };
+const createFakeParty = async (organizer: Organizer): Promise<Party> => {
+
+  const organizerObject = await Organizer.findOne({ where: { id: organizer.id }, raw: false });
+
+  const party = await Party.create({
+    theme: casual.title,
+    date: new Date(casual.date('YYYY-MM-DD')),
+    price: casual.integer(0, 100),
+    people: casual.integer(20, 40),
+    minAge: casual.integer(18, 21),
+    maxAge: casual.integer(28, 30),
+  });
+  await organizerObject?.addParty(party)
+  return party;
+}
+
+export { createFakePartyWithItsOrganizer, createFakeUser, createFakeOrganizer, createFakeParty, casual as fake };

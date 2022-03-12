@@ -1,6 +1,8 @@
 import { User, Organizer, Party } from 'orms';
 import { syncDbModels } from 'orms/pepperDb';
 import { fake, createFakeUser } from 'helpers/fake';
+import { SHA256 } from 'crypto-js';
+import { OrganizerStatus } from '../models/types'
 
 const numberOfUsersToAdd = 50;
 const numberOfOrganizersToAdd = 3;
@@ -46,12 +48,15 @@ describe('## Init Data', () => {
   test('Add Organizers', async () => {
     const fakeOrganizersData = [...Array(numberOfOrganizersToAdd).keys()].map(() => ({
       title: fake.title,
+      phoneNumber: fake.phone,
+      userName: fake.username,
+      password: SHA256(fake.password).toString(),
       location: fake.address,
       description: fake.description,
       imgs: [(fake as unknown as any).bar, (fake as unknown as any).bar, (fake as unknown as any).bar],
-      price: fake.integer(0, 100),
       foods: [(fake as unknown as any).product, (fake as unknown as any).product, (fake as unknown as any).product],
       drinks: [(fake as unknown as any).product, (fake as unknown as any).product, (fake as unknown as any).product],
+      status: OrganizerStatus.Accepted
     }));
 
     organizers = await Promise.all(
@@ -73,6 +78,7 @@ describe('## Init Data', () => {
          const party = await Party.create({
             theme: fake.title,
             date: new Date(fake.date('YYYY-MM-DD')),
+            price: fake.integer(20, 40),
             people: fake.integer(20, 40),
             minAge: 18,
             maxAge: 25 + i,

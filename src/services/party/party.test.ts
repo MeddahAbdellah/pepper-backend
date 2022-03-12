@@ -14,15 +14,16 @@ describe('## Party', () => {
   let party1: Party;
   let party2: Party;
 
+
   beforeAll(async () => {
     await syncDbModels();
     user = await createFakeUser();
     party1 = await createFakePartyWithItsOrganizer();
     party2 = await createFakePartyWithItsOrganizer();
     await (await User.findOne({ where: { id: user.id }}))?.addParty(party1);
-
     const { token } = (await request(app).post('/api/user/login').send({ phoneNumber: user.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
     tokenOfUser1 = token;
+
   });
 
   test('Should be able to get party that the user is not going to', async() => {
@@ -32,4 +33,5 @@ describe('## Party', () => {
 
     expect(partiesUserCanGoTo.map((p: IParty) => p.id )).toEqual([party2.id]);
   });
+
 });

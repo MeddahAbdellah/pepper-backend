@@ -53,3 +53,29 @@ export enum StoreStatus {
   Fulfilled = 'fulfilled',
   Rejected = 'rejected',
 };
+
+
+export enum OrganizerStatus {
+  Pending = 'pending',
+  Accepted = 'accepted',
+  Rejected = 'rejected',
+}
+
+
+interface IOrganizerBase {
+  id: number,
+  userName :string
+  title : string
+  location : string
+  phoneNumber: string,
+  address: string,
+  description: string,
+  imgs: Array<{ uri: string }>,
+  foods : Array<{ name: string, price: number }>,
+  drinks : Array<{ name: string, price: number }>,
+  status : OrganizerStatus
+}
+
+export interface IOrganizer extends IOrganizerBase {
+  parties : IParty[]
+}

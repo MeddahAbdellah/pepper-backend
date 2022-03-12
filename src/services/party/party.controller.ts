@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import Joi from 'joi';
 import { validation } from 'helpers/helpers';
-import { User, Party } from 'orms';
+import { User } from 'orms';
 import httpStatus from 'http-status';
 import _ from 'lodash';
 import { UserService } from 'services/user/user.service';
 import 'dotenv/config';
+import { IParty } from 'models/types';
 
 interface UserRequest extends Request {
   user: User
@@ -14,7 +15,7 @@ interface UserRequest extends Request {
 export class PartyController {
   // TODO: add pagination
   @validation(Joi.object({}))
-  public static async getPartiesThatUserCanGoTo(req: UserRequest, res: Response): Promise<Response<{ parties: Party[] }>> {
+  public static async getPartiesThatUserCanGoTo(req: UserRequest, res: Response): Promise<Response<{ parties: IParty[] }>> {
     const user = await User.findOne({ where: { id: req.user.id }});
 
     if (!user) {
