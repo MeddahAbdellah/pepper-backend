@@ -1,7 +1,6 @@
 .git
 .dockerignore
 node_modules
-build
 Dockerfile*
 npm-debug.log
 pgdata

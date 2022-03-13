@@ -14,4 +14,6 @@ ENV PORT=7550
 
 EXPOSE 7550
 
-CMD ["npm", "run", "serve:prod"]
+# Needs more ram to build on aws 
+
+CMD ["npm", "run", "start"]

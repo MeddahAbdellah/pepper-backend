@@ -8,7 +8,6 @@ services:
       POSTGRES_DB: pepper
       POSTGRES_USER: pepper
       POSTGRES_PASSWORD: sayfEnnar
-      NODE_ENV: prod
     ports:
       - "127.0.0.1:5439:5432"
     volumes:
@@ -20,8 +19,9 @@ services:
     environment:
       DB_PORT: 5432
       DB_HOST: db
+      NODE_ENV: prod
     ports: 
-      - "80:7550"
+      - "7550:7550"
   
 volumes:
   pgdata-11:
