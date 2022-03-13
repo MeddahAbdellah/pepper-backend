@@ -5,6 +5,10 @@ enum Env {
 }
 
 export default class EnvHelper {
+  public static isProd(): boolean {
+    return process.env.NODE_ENV === Env.Prod;
+  }
+
   public static isLocal(): boolean {
     return process.env.NODE_ENV === Env.Local;
   }

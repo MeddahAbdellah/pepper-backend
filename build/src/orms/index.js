@@ -1,0 +1,24 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserMatch = exports.User = exports.Organizer = exports.Party = void 0;
+const tslib_1 = require("tslib");
+const pepperDb_1 = require("orms/pepperDb");
+const party_orm_1 = require("orms/party.orm");
+const user_orm_1 = require("orms/user.orm");
+const organizer_orm_1 = require("orms/organizer.orm");
+(() => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () { return yield (0, pepperDb_1.initDb)(); }))();
+(0, organizer_orm_1.initOrganizer)(pepperDb_1.pepperDb);
+(0, party_orm_1.initParty)(pepperDb_1.pepperDb);
+(0, user_orm_1.initUser)(pepperDb_1.pepperDb);
+(0, organizer_orm_1.associateOrganizer)();
+(0, party_orm_1.associateParty)();
+(0, user_orm_1.associateUser)();
+var party_orm_2 = require("orms/party.orm");
+Object.defineProperty(exports, "Party", { enumerable: true, get: function () { return party_orm_2.Party; } });
+var organizer_orm_2 = require("orms/organizer.orm");
+Object.defineProperty(exports, "Organizer", { enumerable: true, get: function () { return organizer_orm_2.Organizer; } });
+var user_orm_2 = require("orms/user.orm");
+Object.defineProperty(exports, "User", { enumerable: true, get: function () { return user_orm_2.User; } });
+var user_orm_3 = require("orms/user.orm");
+Object.defineProperty(exports, "UserMatch", { enumerable: true, get: function () { return user_orm_3.UserMatch; } });
+//# sourceMappingURL=index.js.map
