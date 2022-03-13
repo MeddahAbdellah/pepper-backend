@@ -6,4 +6,5 @@ describe('## Init Data', () => {
     await syncDbModels();
   });
 
+  test('Db initialized', () => expect(true).toBe(true))
 });
