@@ -4,9 +4,6 @@ const tslib_1 = require("tslib");
 const types_1 = require("models/types");
 const react_1 = (0, tslib_1.__importDefault)(require("react"));
 class Admin extends react_1.default.Component {
-    componentDidMount() {
-        const buttons = document.getElementsByTagName("button");
-    }
     render() {
         const css = `
     * { 

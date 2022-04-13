@@ -1,15 +1,11 @@
 import { IOrganizer, OrganizerStatus } from "models/types";
-import React, { Component } from "react";
+import React from "react";
 
 export interface Props {
   organizers: IOrganizer[];
 }
 
 export default class Admin extends React.Component<Props> {
-  componentDidMount() {
-    const buttons = document.getElementsByTagName("button");
-  }
-
   render() {
     const css = `
     * { 
