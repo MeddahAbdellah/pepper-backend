@@ -1,6 +1,6 @@
-import { User, UserMatch, Party } from "orms";
+import { User, UserMatch, Party, Organizer } from "orms";
 import { normalizeParties, normalizeUserMatches } from 'services/user/user.helper';
-import { IParty, IMatch, MatchStatus } from 'models/types';
+import { IParty, IMatch, MatchStatus, OrganizerStatus } from 'models/types';
 import { Op } from 'sequelize';
 import moment from 'moment';
 
@@ -19,9 +19,13 @@ export class UserService {
 
   public static async getPartiesUserCanGoTo(user: User): Promise<IParty[]> {
     const userParties = await user.getParties();
+    const acceptedOrganizers = await Organizer.findAll({ where: { status: OrganizerStatus.Accepted }});
     const parties = await Party.findAll({ where: {
         id: {
             [Op.notIn]: userParties.map((userParty) => userParty.id),
+        },
+        OrganizerId: {
+            [Op.in]: acceptedOrganizers.map((organizer) => organizer.id),
         }
       }
     });

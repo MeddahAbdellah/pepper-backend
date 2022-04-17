@@ -6,10 +6,12 @@ const organizer_route_1 = (0, tslib_1.__importDefault)(require("services/organiz
 const user_route_1 = (0, tslib_1.__importDefault)(require("services/user/user.route"));
 const party_route_1 = (0, tslib_1.__importDefault)(require("services/party/party.route"));
 const proxy_route_1 = (0, tslib_1.__importDefault)(require("services/proxy/proxy.route"));
+const admin_route_1 = (0, tslib_1.__importDefault)(require("services/admin/admin.route"));
 const routes = express_1.default.Router();
 routes.use('/organizer', organizer_route_1.default);
 routes.use('/user', user_route_1.default);
 routes.use('/party', party_route_1.default);
 routes.use('/proxy', proxy_route_1.default);
+routes.use('/admin', admin_route_1.default);
 exports.default = routes;
 //# sourceMappingURL=routes.js.map

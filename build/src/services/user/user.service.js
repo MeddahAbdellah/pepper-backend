@@ -22,9 +22,13 @@ class UserService {
     static getPartiesUserCanGoTo(user) {
         return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             const userParties = yield user.getParties();
+            const acceptedOrganizers = yield orms_1.Organizer.findAll({ where: { status: types_1.OrganizerStatus.Accepted } });
             const parties = yield orms_1.Party.findAll({ where: {
                     id: {
                         [sequelize_1.Op.notIn]: userParties.map((userParty) => userParty.id),
+                    },
+                    OrganizerId: {
+                        [sequelize_1.Op.in]: acceptedOrganizers.map((organizer) => organizer.id),
                     }
                 }
             });

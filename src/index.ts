@@ -5,6 +5,9 @@ import { runJobs } from 'services/jobs';
 import figlet from 'figlet';
 import gradient from 'gradient-string';
 import EnvHelper from 'helpers/envHelper';
+import { setupReactViews } from 'express-tsx-views';
+import path, { resolve } from "path";
+import { Organizer } from 'orms';
 
 const app = express();
 
@@ -32,6 +35,18 @@ app.use((req: any, _res: any, next: () => void) => {
   console.log('Requeset Headers: ', req.headers);
   next();
 });
+
+app.use(express.static(path.join(__dirname, 'views')));
+
+setupReactViews(app, {
+  viewsDirectory: resolve(__dirname, 'views'),
+});
+
+app.get("/admin", async(_req, res) => {
+  const organizers = await Organizer.findAll({ raw: true });
+  res.render("admin", { organizers });
+});
+
 
 app.use('/api/', routes);
 app.get('/health-check/', (_req: any, res: any) => res.json({ message: 'up'}));
