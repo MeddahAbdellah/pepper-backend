@@ -27,9 +27,6 @@ const deleteOrganizer = (id) => {
 };
 buttons.forEach(button => {
     button.addEventListener('click', () => {
-        console.log(button.dataset.id);
-        console.log(button.dataset.action);
-        console.log(button.dataset.status);
         if (button.dataset.action === 'validate') {
             validateOrganizer(button.dataset.id, button.dataset.status);
         }

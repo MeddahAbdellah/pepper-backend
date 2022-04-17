@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserMatch = exports.User = exports.associateUser = exports.initUser = void 0;
+exports.UserParty = exports.UserMatch = exports.User = exports.associateUser = exports.initUser = void 0;
 const sequelize_1 = require("sequelize");
 const types_1 = require("models/types");
 const types_2 = require("models/types");
@@ -8,10 +8,20 @@ const party_orm_1 = require("orms/party.orm");
 class UserMatch extends sequelize_1.Model {
 }
 exports.UserMatch = UserMatch;
+class UserParty extends sequelize_1.Model {
+}
+exports.UserParty = UserParty;
 class User extends sequelize_1.Model {
 }
 exports.User = User;
 const initUser = (sequelize) => {
+    UserParty.init({
+        status: {
+            type: sequelize_1.DataTypes.ENUM(types_1.UserPartyStatus.WAITING, types_1.UserPartyStatus.ACCEPTED, types_1.UserPartyStatus.ATTENDED, types_1.UserPartyStatus.REJECTED, types_1.UserPartyStatus.ABSENT),
+            allowNull: false,
+            defaultValue: types_1.UserPartyStatus.WAITING,
+        },
+    }, { sequelize, paranoid: false });
     UserMatch.init({
         status: {
             type: sequelize_1.DataTypes.ENUM(types_1.MatchStatus.ACCEPTED, types_1.MatchStatus.UNAVAILABLE, types_1.MatchStatus.UNCHECKED, types_1.MatchStatus.WAITING),
@@ -62,7 +72,7 @@ const initUser = (sequelize) => {
 exports.initUser = initUser;
 const associateUser = () => {
     User.belongsToMany(User, { through: UserMatch, as: 'Matches' });
-    User.belongsToMany(party_orm_1.Party, { through: { model: 'UserParties', paranoid: false }, as: 'Parties' });
+    User.belongsToMany(party_orm_1.Party, { through: UserParty, as: 'Parties' });
 };
 exports.associateUser = associateUser;
 //# sourceMappingURL=user.orm.js.map

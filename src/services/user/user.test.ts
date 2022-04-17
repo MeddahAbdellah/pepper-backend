@@ -1,3 +1,4 @@
+/* eslint-disable jest/expect-expect */
 import request from 'supertest';
 import app from 'index';
 import httpStatus from 'http-status';
@@ -290,6 +291,21 @@ describe('## User', () => {
         const userAfterAddingParty = await User.findOne({ where: { id: user1.id } });
         const AfterAddingParty = await userAfterAddingParty?.getParties({ raw: true });
         expect(AfterAddingParty?.map((currentParty: Party) => currentParty.id)).toEqual([]);
+      });
+
+      test('Should be Able to get party attendees', async () => {
+        await request(app).post(`/api/user/parties`).
+          set('Authorization', tokenOfUser1).
+          send({ partyId: party.id }).
+          expect(httpStatus.OK);
+        await request(app).post(`/api/user/parties`).
+          set('Authorization', tokenOfUser2).
+          send({ partyId: party.id }).
+          expect(httpStatus.OK);
+        const parties = (await request(app).get(`/api/user/parties`).
+          set('Authorization', tokenOfUser1).
+          expect(httpStatus.OK)).body.parties;
+        expect(parties[0].attendees.map((attendee: IUser) => attendee.id)).toEqual([user1.id, user2.id]);
       });
     });
   });

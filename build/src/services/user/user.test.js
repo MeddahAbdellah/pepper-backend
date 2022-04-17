@@ -223,6 +223,20 @@ describe('## User', () => {
                 const AfterAddingParty = yield (userAfterAddingParty === null || userAfterAddingParty === void 0 ? void 0 : userAfterAddingParty.getParties({ raw: true }));
                 expect(AfterAddingParty === null || AfterAddingParty === void 0 ? void 0 : AfterAddingParty.map((currentParty) => currentParty.id)).toEqual([]);
             }));
+            test('Should be Able to get party attendees', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+                yield (0, supertest_1.default)(index_1.default).post(`/api/user/parties`).
+                    set('Authorization', tokenOfUser1).
+                    send({ partyId: party.id }).
+                    expect(http_status_1.default.OK);
+                yield (0, supertest_1.default)(index_1.default).post(`/api/user/parties`).
+                    set('Authorization', tokenOfUser2).
+                    send({ partyId: party.id }).
+                    expect(http_status_1.default.OK);
+                const parties = (yield (0, supertest_1.default)(index_1.default).get(`/api/user/parties`).
+                    set('Authorization', tokenOfUser1).
+                    expect(http_status_1.default.OK)).body.parties;
+                expect(parties[0].attendees.map((attendee) => attendee.id)).toEqual([user1.id, user2.id]);
+            }));
         });
     });
 });

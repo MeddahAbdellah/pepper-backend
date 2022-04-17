@@ -7,15 +7,25 @@ const user_helper_1 = require("services/user/user.helper");
 const types_1 = require("models/types");
 const sequelize_1 = require("sequelize");
 const moment_1 = (0, tslib_1.__importDefault)(require("moment"));
+const lodash_1 = (0, tslib_1.__importDefault)(require("lodash"));
 class UserService {
     static getUserParties(user) {
         return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-            const parties = yield user.getParties();
-            const partiesWithOrganizers = yield Promise.all(yield parties.map((currentParty) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-                const organizer = yield currentParty.getOrganizer();
-                return Object.assign(Object.assign({}, organizer.get({ plain: true })), currentParty.get({ plain: true }));
+            const parties = yield user.getParties({ attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] } });
+            const matches = yield user.getMatches({ raw: true });
+            const partiesWithOrganizersAndAttendees = yield Promise.all(yield parties.map((currentParty) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+                const organizer = yield currentParty.getOrganizer({
+                    attributes: { exclude: ['status', 'createdAt', 'deletedAt', 'updatedAt'] }
+                });
+                const attendeesForThisParty = yield currentParty.getUsers({
+                    attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] },
+                    raw: true,
+                });
+                const attendeesFilteredByUserMatches = lodash_1.default.filter(attendeesForThisParty, (attendee) => !lodash_1.default.map(matches, (match) => match.id).includes(attendee.id));
+                const attendees = lodash_1.default.map(attendeesFilteredByUserMatches, (attendee) => lodash_1.default.omitBy(attendee, (_value, key) => key.includes('UserParty')));
+                return Object.assign(Object.assign(Object.assign({}, organizer.get({ plain: true })), currentParty.get({ plain: true })), { attendees });
             })));
-            const normalizedParties = (0, user_helper_1.normalizeParties)(partiesWithOrganizers);
+            const normalizedParties = (0, user_helper_1.normalizeUserParties)(partiesWithOrganizersAndAttendees);
             return normalizedParties;
         });
     }
@@ -36,7 +46,7 @@ class UserService {
                 const organizer = yield currentParty.getOrganizer();
                 return Object.assign(Object.assign({}, organizer.get({ plain: true })), currentParty.get({ plain: true }));
             })));
-            const normalizedParties = (0, user_helper_1.normalizeParties)(partiesWithOrganizers);
+            const normalizedParties = (0, user_helper_1.normalizeOrganizerParties)(partiesWithOrganizers);
             return normalizedParties;
         });
     }

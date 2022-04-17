@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserMatch = exports.User = exports.Organizer = exports.Party = void 0;
+exports.UserParty = exports.UserMatch = exports.User = exports.Organizer = exports.Party = void 0;
 const tslib_1 = require("tslib");
 const pepperDb_1 = require("orms/pepperDb");
 const party_orm_1 = require("orms/party.orm");
@@ -21,4 +21,6 @@ var user_orm_2 = require("orms/user.orm");
 Object.defineProperty(exports, "User", { enumerable: true, get: function () { return user_orm_2.User; } });
 var user_orm_3 = require("orms/user.orm");
 Object.defineProperty(exports, "UserMatch", { enumerable: true, get: function () { return user_orm_3.UserMatch; } });
+var user_orm_4 = require("orms/user.orm");
+Object.defineProperty(exports, "UserParty", { enumerable: true, get: function () { return user_orm_4.UserParty; } });
 //# sourceMappingURL=index.js.map

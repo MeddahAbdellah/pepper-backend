@@ -1,19 +1,30 @@
 import { User, UserMatch, Party, Organizer } from "orms";
-import { normalizeParties, normalizeUserMatches } from 'services/user/user.helper';
+import { normalizeUserParties, normalizeUserMatches, normalizeOrganizerParties } from 'services/user/user.helper';
 import { IParty, IMatch, MatchStatus, OrganizerStatus } from 'models/types';
 import { Op } from 'sequelize';
 import moment from 'moment';
-
+import _ from 'lodash';
 export class UserService {
   public static async getUserParties(user: User): Promise<IParty[]> {
-    const parties = await user.getParties();
-    const partiesWithOrganizers = await Promise.all(
+    const parties = await user.getParties({ attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] } });
+    const matches = await user.getMatches({ raw: true });
+    const partiesWithOrganizersAndAttendees = await Promise.all(
       await parties.map(async (currentParty) => {
-        const organizer = await currentParty.getOrganizer();
-        return { ...organizer.get({ plain: true }), ...currentParty.get({ plain: true }) };
+        const organizer = await currentParty.getOrganizer({
+          attributes: { exclude: ['status', 'createdAt', 'deletedAt', 'updatedAt'] }
+        });
+        const attendeesForThisParty = await currentParty.getUsers({
+          attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] },
+          raw: true,
+        });
+        // TODO: test this logic
+        const attendeesFilteredByUserMatches = _.filter(attendeesForThisParty, (attendee) => !_.map(matches, (match) => match.id).includes(attendee.id));
+        const attendees = _.map(attendeesFilteredByUserMatches, (attendee) => _.omitBy(attendee, (_value, key) => key.includes('UserParty')));
+        return { ...organizer.get({ plain: true }), ...currentParty.get({ plain: true }), attendees };
       })
     );
-    const normalizedParties = normalizeParties(partiesWithOrganizers);
+
+    const normalizedParties = normalizeUserParties(partiesWithOrganizersAndAttendees);
     return normalizedParties;
   }
 
@@ -36,7 +47,7 @@ export class UserService {
         return { ...organizer.get({ plain: true }), ...currentParty.get({ plain: true }) };
       })
     );
-    const normalizedParties = normalizeParties(partiesWithOrganizers);
+    const normalizedParties = normalizeOrganizerParties(partiesWithOrganizers);
     return normalizedParties;
   }
 

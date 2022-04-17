@@ -12,6 +12,8 @@ export interface IParty {
   drinks: Array<{ name: string, price: number }>,
   price: number,
   imgs: Array<{ uri: string }>,
+  attendees?: IUser[],
+  status?: UserPartyStatus,
 };
 
 interface IUserBase {
@@ -40,6 +42,14 @@ export enum MatchStatus {
   WAITING = 'waiting',
   UNCHECKED = 'unchecked',
   UNAVAILABLE = 'unavailable',
+}
+
+export enum UserPartyStatus {
+  WAITING = 'waiting',
+  ACCEPTED = 'accepted',
+  ATTENDED = 'attended',
+  REJECTED = 'rejected',
+  ABSENT = 'absent',
 }
 
 export enum Gender {

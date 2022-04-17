@@ -1,11 +1,16 @@
 import { Model, DataTypes, Sequelize, HasManyGetAssociationsMixin, HasManyCountAssociationsMixin, HasManyHasAssociationMixin, HasManyAddAssociationMixin, HasManySetAssociationsMixin, Association, HasManyRemoveAssociationMixin } from 'sequelize';
-import { MatchStatus, IUser } from 'models/types';
+import { MatchStatus, IUser, UserPartyStatus } from 'models/types';
 import { Gender } from 'models/types';
 import { Party } from 'orms/party.orm';
 
 class UserMatch extends Model {
   public status!: MatchStatus;
 }
+
+class UserParty extends Model {
+  public status!: UserPartyStatus;
+}
+
 class User extends Model {
   public id!: number;
   public name!: string;
@@ -45,6 +50,14 @@ class User extends Model {
 }
 
 const initUser = (sequelize: Sequelize) => {
+  UserParty.init({
+    status: {
+      type: DataTypes.ENUM(UserPartyStatus.WAITING, UserPartyStatus.ACCEPTED, UserPartyStatus.ATTENDED, UserPartyStatus.REJECTED, UserPartyStatus.ABSENT),
+      allowNull: false,
+      defaultValue: UserPartyStatus.WAITING,
+    },
+  }, { sequelize, paranoid: false });
+
   UserMatch.init({
     status: {
       type: DataTypes.ENUM(MatchStatus.ACCEPTED, MatchStatus.UNAVAILABLE, MatchStatus.UNCHECKED, MatchStatus.WAITING),
@@ -96,7 +109,7 @@ const initUser = (sequelize: Sequelize) => {
 
 const associateUser = () => {
   User.belongsToMany(User, { through: UserMatch, as: 'Matches' });
-  User.belongsToMany(Party, { through: { model: 'UserParties', paranoid: false }, as: 'Parties' });
+  User.belongsToMany(Party, { through: UserParty, as: 'Parties' });
 }
 
-export { initUser, associateUser, User, UserMatch };
+export { initUser, associateUser, User, UserMatch, UserParty };

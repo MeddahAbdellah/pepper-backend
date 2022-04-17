@@ -17,11 +17,21 @@ const normalizeUserMatches = (userMatches: User[]): IMatch[] => {
   }))
 }
 
-const normalizeParties = (userParties: Party[]): IParty[] => {
-  const normalizedUserParty = _.map(userParties, (party) => {
+const normalizeOrganizerParties = (userParties: Party[]): IParty[] => {
+  const normalizedOrganizerParty = _.map(userParties, (party) => {
    return _.omit(party, ['UserParties', 'createdAt', 'updatedAt', 'deletedAt']) as unknown as IParty;
+  });
+  return normalizedOrganizerParty;
+}
+
+const normalizeUserParties = (userParties: Party[]): IParty[] => {
+  const normalizedUserParty = _.map(userParties, (party) => {
+   return {
+    ..._.omit(party, ['UserParty']),
+    status: (party as unknown as any)['UserParty.status'],
+  } as unknown as IParty;
   });
   return normalizedUserParty;
 }
 
-export { normalizeUserMatches, normalizeParties };
+export { normalizeUserMatches, normalizeOrganizerParties, normalizeUserParties };
