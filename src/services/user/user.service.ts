@@ -1,6 +1,6 @@
-import { User, UserMatch, Party, Organizer } from "orms";
+import { User, UserMatch, Party, Organizer, UserParty } from "orms";
 import { normalizeUserParties, normalizeUserMatches, normalizeOrganizerParties } from 'services/user/user.helper';
-import { IParty, IMatch, MatchStatus, OrganizerStatus } from 'models/types';
+import { IParty, IMatch, MatchStatus, OrganizerStatus, UserPartyStatus } from 'models/types';
 import { Op } from 'sequelize';
 import moment from 'moment';
 import _ from 'lodash';
@@ -86,5 +86,89 @@ export class UserService {
         },
       },
     );
+  }
+  
+  public static async addParty(user: User, party: Party): Promise<void> {
+    const firstWaitingAttendeeId = (await UserParty.findAll({
+      attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] },
+      where: {
+        status: UserPartyStatus.WAITING,
+        PartyId: party.id,
+        UserId: { [Op.not]: user.id },
+      },
+      order: [
+        ['createdAt', 'ASC'],
+      ],
+      limit: 1,
+      raw: true,
+      plain: true,
+      // TODO: FIX typing
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }) as unknown as any)?.UserId;
+
+    const lastAcceptedAttendeeId = (await UserParty.findAll({
+      attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] },
+      where: {
+        status: UserPartyStatus.ACCEPTED,
+        PartyId: party.id,
+        UserId: { [Op.not]: user.id },
+      },
+      order: [
+        ['createdAt', 'DESC'],
+      ],
+      limit: 1,
+      raw: true,
+      plain: true,
+      // TODO: FIX typing
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }) as unknown as any)?.UserId;
+    await user.addParty(party);
+
+    const acceptUser = async () => {
+      if (firstWaitingAttendeeId) {
+        await UserParty.update(
+          { status: UserPartyStatus.ACCEPTED },
+          { where: { 
+            [Op.and]: [
+              { UserId: firstWaitingAttendeeId },
+              { PartyId: party.id },
+            ],
+            },
+          },
+        );
+      }
+      
+      await UserParty.update(
+        { status: UserPartyStatus.ACCEPTED },
+        { where: { 
+          [Op.and]: [
+            { UserId: user.id },
+            { PartyId: party.id },
+          ],
+          },
+        },
+      );
+    }
+
+    if (!lastAcceptedAttendeeId) {
+      await acceptUser();
+      return;
+    }
+
+    const lastAcceptedAttendeeGender = (await User.findOne({
+      attributes: ['gender'],
+      where: { id: lastAcceptedAttendeeId },
+      raw: true,
+    }))?.gender;
+
+    const firstWaitingAttendeeGender = (await User.findOne({
+      attributes: ['gender'],
+      where: { id: firstWaitingAttendeeId },
+      raw: true,
+    }))?.gender;
+
+    if (user.gender !== lastAcceptedAttendeeGender || user.gender !== firstWaitingAttendeeGender) {
+      await acceptUser();
+    }
   }
 }

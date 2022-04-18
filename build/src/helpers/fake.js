@@ -18,17 +18,8 @@ casual_1.default.define('match_status', () => [
     types_1.MatchStatus.UNCHECKED,
     types_1.MatchStatus.WAITING,
 ][casual_1.default.integer(0, 3)]);
-const createFakeUser = () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
-    const user = yield orms_1.User.create({
-        name: casual_1.default.first_name,
-        gender: casual_1.default.gender,
-        phoneNumber: casual_1.default.phoneNumber,
-        address: casual_1.default.address,
-        description: casual_1.default.description,
-        job: casual_1.default.company_name,
-        imgs: [casual_1.default.portrait, casual_1.default.portrait, casual_1.default.portrait],
-        interests: [casual_1.default.word, casual_1.default.word, casual_1.default.word],
-    });
+const createFakeUser = (overrideProps) => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+    const user = yield orms_1.User.create(Object.assign({ name: casual_1.default.first_name, gender: casual_1.default.gender, phoneNumber: casual_1.default.phoneNumber, address: casual_1.default.address, description: casual_1.default.description, job: casual_1.default.company_name, imgs: [casual_1.default.portrait, casual_1.default.portrait, casual_1.default.portrait], interests: [casual_1.default.word, casual_1.default.word, casual_1.default.word] }, (overrideProps ? overrideProps : {})));
     return user.get({ plain: true });
 });
 exports.createFakeUser = createFakeUser;

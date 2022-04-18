@@ -18,11 +18,11 @@ class Party extends Model {
   public getOrganizer!: BelongsToGetAssociationMixin<Organizer>;
   public setOrganizer!: BelongsToSetAssociationMixin<Organizer, number>; 
 
-  public getUsers!: HasManyGetAssociationsMixin<Party>;
-  public addUser!: HasManyAddAssociationMixin<Party, number>;
-  public hasUser!: HasManyHasAssociationMixin<Party, number>;
+  public getUsers!: HasManyGetAssociationsMixin<User>;
+  public addUser!: HasManyAddAssociationMixin<User, number>;
+  public hasUser!: HasManyHasAssociationMixin<User, number>;
   public countUsers!: HasManyCountAssociationsMixin;
-  public removeUser!: HasManyRemoveAssociationMixin<Party, number>;
+  public removeUser!: HasManyRemoveAssociationMixin<User, number>;
 }
 const initParty = (sequelize: Sequelize) => {
   Party.init({

@@ -178,7 +178,7 @@ class UserController {
                 res.status(http_status_1.default.NOT_FOUND);
                 return res.json({ message: 'Party or User does not exist' });
             }
-            yield user.addParty(party);
+            yield user_service_1.UserService.addParty(user, party);
             const normalizedParties = yield user_service_1.UserService.getUserParties(user);
             return res.json({ parties: normalizedParties });
         });

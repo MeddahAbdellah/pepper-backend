@@ -85,6 +85,75 @@ class UserService {
             });
         });
     }
+    static addParty(user, party) {
+        var _a, _b, _c, _d;
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            const firstWaitingAttendeeId = (_a = (yield orms_1.UserParty.findAll({
+                attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] },
+                where: {
+                    status: types_1.UserPartyStatus.WAITING,
+                    PartyId: party.id,
+                    UserId: { [sequelize_1.Op.not]: user.id },
+                },
+                order: [
+                    ['createdAt', 'ASC'],
+                ],
+                limit: 1,
+                raw: true,
+                plain: true,
+            }))) === null || _a === void 0 ? void 0 : _a.UserId;
+            const lastAcceptedAttendeeId = (_b = (yield orms_1.UserParty.findAll({
+                attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] },
+                where: {
+                    status: types_1.UserPartyStatus.ACCEPTED,
+                    PartyId: party.id,
+                    UserId: { [sequelize_1.Op.not]: user.id },
+                },
+                order: [
+                    ['createdAt', 'DESC'],
+                ],
+                limit: 1,
+                raw: true,
+                plain: true,
+            }))) === null || _b === void 0 ? void 0 : _b.UserId;
+            yield user.addParty(party);
+            const acceptUser = () => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+                if (firstWaitingAttendeeId) {
+                    yield orms_1.UserParty.update({ status: types_1.UserPartyStatus.ACCEPTED }, { where: {
+                            [sequelize_1.Op.and]: [
+                                { UserId: firstWaitingAttendeeId },
+                                { PartyId: party.id },
+                            ],
+                        },
+                    });
+                }
+                yield orms_1.UserParty.update({ status: types_1.UserPartyStatus.ACCEPTED }, { where: {
+                        [sequelize_1.Op.and]: [
+                            { UserId: user.id },
+                            { PartyId: party.id },
+                        ],
+                    },
+                });
+            });
+            if (!lastAcceptedAttendeeId) {
+                yield acceptUser();
+                return;
+            }
+            const lastAcceptedAttendeeGender = (_c = (yield orms_1.User.findOne({
+                attributes: ['gender'],
+                where: { id: lastAcceptedAttendeeId },
+                raw: true,
+            }))) === null || _c === void 0 ? void 0 : _c.gender;
+            const firstWaitingAttendeeGender = (_d = (yield orms_1.User.findOne({
+                attributes: ['gender'],
+                where: { id: firstWaitingAttendeeId },
+                raw: true,
+            }))) === null || _d === void 0 ? void 0 : _d.gender;
+            if (user.gender !== lastAcceptedAttendeeGender || user.gender !== firstWaitingAttendeeGender) {
+                yield acceptUser();
+            }
+        });
+    }
 }
 exports.UserService = UserService;
 //# sourceMappingURL=user.service.js.map

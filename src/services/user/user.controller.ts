@@ -235,7 +235,7 @@ export class UserController {
       res.status(httpStatus.NOT_FOUND);
       return res.json({ message: 'Party or User does not exist' });
     }
-    await user.addParty(party);
+    await UserService.addParty(user, party);
     const normalizedParties = await UserService.getUserParties(user);
     return res.json({ parties: normalizedParties });
   }

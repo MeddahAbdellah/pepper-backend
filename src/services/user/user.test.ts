@@ -6,7 +6,7 @@ import { User, Party } from 'orms';
 import { createFakeUser, createFakePartyWithItsOrganizer, fake } from 'helpers/fake';
 import { syncDbModels } from 'orms/pepperDb';
 import jwt from 'jsonwebtoken';
-import { IUser, MatchStatus, IParty } from 'models/types';
+import { IUser, MatchStatus, IParty, Gender } from 'models/types';
 import _ from 'lodash';
 import { normalizeUserMatches } from 'services/user/user.helper';
 import 'dotenv/config';
@@ -15,12 +15,18 @@ describe('## User', () => {
   let user1: User;
   let user2: User;
   let user3: User;
+  let user4: User;
+  let user5: User;
+  let user6: User;
   let party: Party;
   beforeAll(async () => {
     await syncDbModels();
-    user1 = await createFakeUser();
-    user2 = await createFakeUser();
-    user3 = await createFakeUser();
+    user1 = await createFakeUser({ gender: Gender.MAN });
+    user2 = await createFakeUser({ gender: Gender.MAN });
+    user3 = await createFakeUser({ gender: Gender.WOMAN });
+    user4 = await createFakeUser({ gender: Gender.WOMAN });
+    user5 = await createFakeUser({ gender: Gender.WOMAN });
+    user6 = await createFakeUser({ gender: Gender.MAN });
     party = await createFakePartyWithItsOrganizer();
   });
 
@@ -82,14 +88,23 @@ describe('## User', () => {
     let tokenOfUser1: string;
     let tokenOfUser2: string;
     let tokenOfUser3: string;
+    let tokenOfUser4: string;
+    let tokenOfUser5: string;
+    let tokenOfUser6: string;
 
     beforeAll(async () => {
       const user1Login = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
       const user2Login = (await request(app).post('/api/user/login').send({ phoneNumber: user2.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
       const user3Login = (await request(app).post('/api/user/login').send({ phoneNumber: user3.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
+      const user4Login = (await request(app).post('/api/user/login').send({ phoneNumber: user4.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
+      const user5Login = (await request(app).post('/api/user/login').send({ phoneNumber: user5.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
+      const user6Login = (await request(app).post('/api/user/login').send({ phoneNumber: user6.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
       tokenOfUser1 = user1Login.token;
       tokenOfUser2 = user2Login.token;
       tokenOfUser3 = user3Login.token;
+      tokenOfUser4 = user4Login.token;
+      tokenOfUser5 = user5Login.token;
+      tokenOfUser6 = user6Login.token;
     });
 
     test('should be able to query info with the right token', async () => {
@@ -306,6 +321,29 @@ describe('## User', () => {
           set('Authorization', tokenOfUser1).
           expect(httpStatus.OK)).body.parties;
         expect(parties[0].attendees.map((attendee: IUser) => attendee.id)).toEqual([user1.id, user2.id]);
+      });
+
+      test('Should accept users to keep gender parity', async() => {
+        await request(app).post(`/api/user/parties`).
+          set('Authorization', tokenOfUser3).
+          send({ partyId: party.id }).
+          expect(httpStatus.OK);
+        await request(app).post(`/api/user/parties`).
+          set('Authorization', tokenOfUser4).
+          send({ partyId: party.id }).
+          expect(httpStatus.OK);
+        await request(app).post(`/api/user/parties`).
+          set('Authorization', tokenOfUser5).
+          send({ partyId: party.id }).
+          expect(httpStatus.OK);
+        await request(app).post(`/api/user/parties`).
+          set('Authorization', tokenOfUser6).
+          send({ partyId: party.id }).
+          expect(httpStatus.OK);
+        const parties = (await request(app).get(`/api/user/parties`).
+          set('Authorization', tokenOfUser1).
+          expect(httpStatus.OK)).body.parties;
+        expect(_.sortBy(parties[0].attendees.map((attendee: IUser) => attendee.id))).toEqual([user1.id, user2.id, user3.id, user4.id, user5.id, user6.id]);
       });
     });
   });
