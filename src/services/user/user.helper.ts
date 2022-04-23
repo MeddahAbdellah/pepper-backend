@@ -24,14 +24,4 @@ const normalizeOrganizerParties = (userParties: Party[]): IParty[] => {
   return normalizedOrganizerParty;
 }
 
-const normalizeUserParties = (userParties: Party[]): IParty[] => {
-  const normalizedUserParty = _.map(userParties, (party) => {
-   return {
-    ..._.omit(party, ['UserParty']),
-    status: (party as unknown as any)['UserParty.status'],
-  } as unknown as IParty;
-  });
-  return normalizedUserParty;
-}
-
-export { normalizeUserMatches, normalizeOrganizerParties, normalizeUserParties };
+export { normalizeUserMatches, normalizeOrganizerParties };

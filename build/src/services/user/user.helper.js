@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.normalizeUserParties = exports.normalizeOrganizerParties = exports.normalizeUserMatches = void 0;
+exports.normalizeOrganizerParties = exports.normalizeUserMatches = void 0;
 const tslib_1 = require("tslib");
 const lodash_1 = (0, tslib_1.__importDefault)(require("lodash"));
 const normalizeUserMatches = (userMatches) => {
@@ -25,11 +25,4 @@ const normalizeOrganizerParties = (userParties) => {
     return normalizedOrganizerParty;
 };
 exports.normalizeOrganizerParties = normalizeOrganizerParties;
-const normalizeUserParties = (userParties) => {
-    const normalizedUserParty = lodash_1.default.map(userParties, (party) => {
-        return Object.assign(Object.assign({}, lodash_1.default.omit(party, ['UserParty'])), { status: party['UserParty.status'] });
-    });
-    return normalizedUserParty;
-};
-exports.normalizeUserParties = normalizeUserParties;
 //# sourceMappingURL=user.helper.js.map

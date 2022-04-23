@@ -23,10 +23,12 @@ class UserService {
                 });
                 const attendeesFilteredByUserMatches = lodash_1.default.filter(attendeesForThisParty, (attendee) => !lodash_1.default.map(matches, (match) => match.id).includes(attendee.id));
                 const attendees = lodash_1.default.map(attendeesFilteredByUserMatches, (attendee) => lodash_1.default.omitBy(attendee, (_value, key) => key.includes('UserParty')));
-                return Object.assign(Object.assign(Object.assign({}, organizer.get({ plain: true })), currentParty.get({ plain: true })), { attendees });
+                const plainParty = currentParty.get({ plain: true });
+                const userPartyStatus = plainParty['UserParty'].status;
+                const outputParty = Object.assign(Object.assign(Object.assign({ status: userPartyStatus }, organizer.get({ plain: true })), lodash_1.default.omit(plainParty, 'UserParty')), { attendees });
+                return outputParty;
             })));
-            const normalizedParties = (0, user_helper_1.normalizeUserParties)(partiesWithOrganizersAndAttendees);
-            return normalizedParties;
+            return partiesWithOrganizersAndAttendees;
         });
     }
     static getPartiesUserCanGoTo(user) {
@@ -144,11 +146,11 @@ class UserService {
                 where: { id: lastAcceptedAttendeeId },
                 raw: true,
             }))) === null || _c === void 0 ? void 0 : _c.gender;
-            const firstWaitingAttendeeGender = (_d = (yield orms_1.User.findOne({
+            const firstWaitingAttendeeGender = firstWaitingAttendeeId ? (_d = (yield orms_1.User.findOne({
                 attributes: ['gender'],
                 where: { id: firstWaitingAttendeeId },
                 raw: true,
-            }))) === null || _d === void 0 ? void 0 : _d.gender;
+            }))) === null || _d === void 0 ? void 0 : _d.gender : null;
             if (user.gender !== lastAcceptedAttendeeGender || user.gender !== firstWaitingAttendeeGender) {
                 yield acceptUser();
             }
