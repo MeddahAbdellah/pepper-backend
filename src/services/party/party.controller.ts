@@ -3,7 +3,6 @@ import Joi from 'joi';
 import { validation } from 'helpers/helpers';
 import { User } from 'orms';
 import httpStatus from 'http-status';
-import _ from 'lodash';
 import { UserService } from 'services/user/user.service';
 import 'dotenv/config';
 import { IParty } from 'models/types';

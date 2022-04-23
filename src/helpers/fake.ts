@@ -1,5 +1,5 @@
 import { User, Party, Organizer } from "orms";
-import { Gender, MatchStatus, OrganizerStatus } from 'models/types';
+import { Gender, IUser, MatchStatus, OrganizerStatus } from 'models/types';
 import casual from 'casual';
 import sha256 from 'crypto-js/sha256';
 
@@ -15,7 +15,7 @@ casual.define('match_status', () => [
   MatchStatus.WAITING,
 ][casual.integer(0, 3)]);
 
-const createFakeUser = async (): Promise<User> => {
+const createFakeUser = async (overrideProps?: Partial<IUser>): Promise<User> => {
   const user = await User.create({
     name: casual.first_name,
     gender: (casual as unknown as any).gender,
@@ -25,6 +25,7 @@ const createFakeUser = async (): Promise<User> => {
     job: casual.company_name,
     imgs: [(casual as unknown as any).portrait, (casual as unknown as any).portrait, (casual as unknown as any).portrait],
     interests: [casual.word, casual.word, casual.word],
+    ...(overrideProps ? overrideProps : {})
   });
 
   return user.get({ plain: true });

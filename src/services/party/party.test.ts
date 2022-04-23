@@ -4,7 +4,6 @@ import httpStatus from 'http-status';
 import { User, Party } from 'orms';
 import { createFakeUser, createFakePartyWithItsOrganizer } from 'helpers/fake';
 import { syncDbModels } from 'orms/pepperDb';
-import _ from 'lodash';
 import 'dotenv/config';
 import { IParty } from 'models/types';
 

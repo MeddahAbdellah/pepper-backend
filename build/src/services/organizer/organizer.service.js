@@ -10,7 +10,7 @@ class OrganizerService {
             const partiesWithOrganizers = parties.map((currentParty) => {
                 return Object.assign(Object.assign({}, organizer.get({ plain: true })), currentParty.get({ plain: true }));
             });
-            const normalizedParties = (0, user_helper_1.normalizeParties)(partiesWithOrganizers);
+            const normalizedParties = (0, user_helper_1.normalizeOrganizerParties)(partiesWithOrganizers);
             return normalizedParties;
         });
     }

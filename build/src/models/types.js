@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OrganizerStatus = exports.StoreStatus = exports.Gender = exports.MatchStatus = void 0;
+exports.OrganizerStatus = exports.StoreStatus = exports.Gender = exports.UserPartyStatus = exports.MatchStatus = void 0;
 ;
 ;
 ;
@@ -11,6 +11,14 @@ var MatchStatus;
     MatchStatus["UNCHECKED"] = "unchecked";
     MatchStatus["UNAVAILABLE"] = "unavailable";
 })(MatchStatus = exports.MatchStatus || (exports.MatchStatus = {}));
+var UserPartyStatus;
+(function (UserPartyStatus) {
+    UserPartyStatus["WAITING"] = "waiting";
+    UserPartyStatus["ACCEPTED"] = "accepted";
+    UserPartyStatus["ATTENDED"] = "attended";
+    UserPartyStatus["REJECTED"] = "rejected";
+    UserPartyStatus["ABSENT"] = "absent";
+})(UserPartyStatus = exports.UserPartyStatus || (exports.UserPartyStatus = {}));
 var Gender;
 (function (Gender) {
     Gender["MAN"] = "man";

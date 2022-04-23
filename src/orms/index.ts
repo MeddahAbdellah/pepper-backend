@@ -14,5 +14,6 @@ export { Party } from 'orms/party.orm';
 export { Organizer } from 'orms/organizer.orm';
 export { User } from 'orms/user.orm';
 export { UserMatch } from 'orms/user.orm';
+export { UserParty } from 'orms/user.orm';
 
 
