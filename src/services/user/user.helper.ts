@@ -19,7 +19,7 @@ const normalizeUserMatches = (userMatches: User[]): IMatch[] => {
 
 const normalizeOrganizerParties = (userParties: Party[]): IParty[] => {
   const normalizedOrganizerParty = _.map(userParties, (party) => {
-   return _.omit(party, ['UserParties', 'createdAt', 'updatedAt', 'deletedAt']) as unknown as IParty;
+   return _.omit(party, ['password', 'userName', 'phoneNumber', 'UserParties', 'createdAt', 'updatedAt', 'deletedAt']) as unknown as IParty;
   });
   return normalizedOrganizerParty;
 }

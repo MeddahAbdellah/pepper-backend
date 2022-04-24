@@ -18,6 +18,7 @@ class OrganizerRoutes {
     this._router.route('/login').post(checkParametersAndCallRoute(OrganizerController.login));
     this._router.route('/party').post(authorizeForOrganize,checkParametersAndCallRoute(OrganizerController.createNewparty));
     this._router.route('/party').get(authorizeForOrganize,checkParametersAndCallRoute(OrganizerController.getOrganizerParties));
+    this._router.route('/party').delete(authorizeForOrganize,checkParametersAndCallRoute(OrganizerController.deleteParty));
   }
 }
 
