@@ -252,7 +252,7 @@ export class UserController {
       res.status(httpStatus.NOT_FOUND);
       return res.json({ message: 'Party or User does not exist' });
     }
-    console.log('HERE', party.id);
+    // TODO: test this logic
     await UserParty.update(
       { status: UserPartyStatus.ATTENDED },
       { where: { 

@@ -192,7 +192,6 @@ class UserController {
                 res.status(http_status_1.default.NOT_FOUND);
                 return res.json({ message: 'Party or User does not exist' });
             }
-            console.log('HERE', party.id);
             yield orms_1.UserParty.update({ status: types_1.UserPartyStatus.ATTENDED }, { where: {
                     [sequelize_1.Op.and]: [
                         { UserId: user.id },
