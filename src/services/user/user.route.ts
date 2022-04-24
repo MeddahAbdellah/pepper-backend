@@ -23,6 +23,7 @@ class UserRoutes {
     this._router.route('/matches').delete(authorizeForUser,checkParametersAndCallRoute(UserController.deleteMatch));
     this._router.route('/parties').get(authorizeForUser,checkParametersAndCallRoute(UserController.getParties));
     this._router.route('/parties').post(authorizeForUser,checkParametersAndCallRoute(UserController.addParty));
+    this._router.route('/parties').put(authorizeForUser,checkParametersAndCallRoute(UserController.attendParty));
     this._router.route('/parties').delete(authorizeForUser,checkParametersAndCallRoute(UserController.cancelParty));
   }
 }

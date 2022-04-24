@@ -12,6 +12,7 @@ const lodash_1 = (0, tslib_1.__importDefault)(require("lodash"));
 const user_service_1 = require("services/user/user.service");
 require("dotenv/config");
 const auth_1 = (0, tslib_1.__importDefault)(require("helpers/auth"));
+const sequelize_1 = require("sequelize");
 ;
 class UserController {
     static createLoginVerificationAndCheckIfUserExisits(req, res) {
@@ -183,6 +184,26 @@ class UserController {
             return res.json({ parties: normalizedParties });
         });
     }
+    static attendParty(req, res) {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            const party = yield orms_1.Party.findOne({ where: { id: req.body.partyId } });
+            const user = yield orms_1.User.findOne({ where: { id: req.user.id } });
+            if (!party || !user) {
+                res.status(http_status_1.default.NOT_FOUND);
+                return res.json({ message: 'Party or User does not exist' });
+            }
+            console.log('HERE', party.id);
+            yield orms_1.UserParty.update({ status: types_1.UserPartyStatus.ATTENDED }, { where: {
+                    [sequelize_1.Op.and]: [
+                        { UserId: user.id },
+                        { PartyId: party.id },
+                    ],
+                },
+            });
+            const normalizedParties = yield user_service_1.UserService.getUserParties(user);
+            return res.json({ parties: normalizedParties });
+        });
+    }
     static cancelParty(req, res) {
         return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             const party = yield orms_1.Party.findOne({ where: { id: req.body.partyId } });
@@ -263,6 +284,11 @@ class UserController {
         partyId: joi_1.default.number().required(),
     }))
 ], UserController, "addParty", null);
+(0, tslib_1.__decorate)([
+    (0, helpers_1.validation)(joi_1.default.object({
+        partyId: joi_1.default.number().required(),
+    }))
+], UserController, "attendParty", null);
 (0, tslib_1.__decorate)([
     (0, helpers_1.validation)(joi_1.default.object({
         partyId: joi_1.default.number().required(),

@@ -1,14 +1,15 @@
 import { Request, Response } from 'express';
 import Joi from 'joi';
 import { validation } from 'helpers/helpers';
-import { User, Party } from 'orms';
+import { User, Party, UserParty } from 'orms';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
-import { IUser, MatchStatus, Gender, IParty } from 'models/types';
+import { IUser, MatchStatus, Gender, IParty, UserPartyStatus } from 'models/types';
 import _ from 'lodash';
 import { UserService } from 'services/user/user.service';
 import 'dotenv/config';
 import AuthHelper from 'helpers/auth';
+import { Op } from 'sequelize';
 
 interface UserRequest extends Request {
   user: User
@@ -236,6 +237,32 @@ export class UserController {
       return res.json({ message: 'Party or User does not exist' });
     }
     await UserService.addParty(user, party);
+    const normalizedParties = await UserService.getUserParties(user);
+    return res.json({ parties: normalizedParties });
+  }
+
+  @validation(Joi.object({
+    partyId: Joi.number().required(),
+  }))
+  public static async attendParty(req: UserRequest, res: Response): Promise<Response<{ parties: IParty[] }>> {
+    const party = await Party.findOne({ where: { id: req.body.partyId } });
+    const user = await User.findOne({ where: { id: req.user.id }});
+
+    if (!party || !user) {
+      res.status(httpStatus.NOT_FOUND);
+      return res.json({ message: 'Party or User does not exist' });
+    }
+    console.log('HERE', party.id);
+    await UserParty.update(
+      { status: UserPartyStatus.ATTENDED },
+      { where: { 
+        [Op.and]: [
+          { UserId: user.id },
+          { PartyId: party.id },
+        ],
+        },
+      },
+    );
     const normalizedParties = await UserService.getUserParties(user);
     return res.json({ parties: normalizedParties });
   }

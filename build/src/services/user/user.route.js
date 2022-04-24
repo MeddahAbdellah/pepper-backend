@@ -25,6 +25,7 @@ class UserRoutes {
         this._router.route('/matches').delete(acl_1.authorizeForUser, (0, helpers_1.checkParametersAndCallRoute)(user_controller_1.UserController.deleteMatch));
         this._router.route('/parties').get(acl_1.authorizeForUser, (0, helpers_1.checkParametersAndCallRoute)(user_controller_1.UserController.getParties));
         this._router.route('/parties').post(acl_1.authorizeForUser, (0, helpers_1.checkParametersAndCallRoute)(user_controller_1.UserController.addParty));
+        this._router.route('/parties').put(acl_1.authorizeForUser, (0, helpers_1.checkParametersAndCallRoute)(user_controller_1.UserController.attendParty));
         this._router.route('/parties').delete(acl_1.authorizeForUser, (0, helpers_1.checkParametersAndCallRoute)(user_controller_1.UserController.cancelParty));
     }
 }
