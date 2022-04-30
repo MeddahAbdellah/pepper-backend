@@ -168,4 +168,27 @@ export class OrganizerController {
     return res.json({ parties: normalizedParties });
   }
 
+  @validation(Joi.object({
+    id: Joi.number().required(),
+  }))
+  public static async deleteParty(req: OrganizerRequest, res: Response): Promise<Response<{ parties: IParty[] }>> {
+    const organizer = await Organizer.findOne({ where: { id: req.organizer.id }});
+
+
+    const party = await Party.findByPk(req.body.id);
+    
+    const partyOrganizer = await party?.getOrganizer();
+
+    if ((partyOrganizer != undefined) && (party != null) && (partyOrganizer.id == req.organizer.id)){
+      await party.destroy();
+    }
+
+    if (!organizer) {
+      res.status(httpStatus.NOT_FOUND);
+      return res.json({ message: 'User does not exist' });
+    }
+    const normalizedParties = await OrganizerService.getOrganizerParties(organizer)
+    return res.json({ parties: normalizedParties });
+  }
+
 } 

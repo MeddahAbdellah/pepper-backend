@@ -177,5 +177,33 @@ describe('## organizer', () => {
       expect(parties[0].price).toEqual(partyTest.price);
     });
 
+    test('Should be able to create delete party for organizer', async() => {
+  
+      const partyTest = {
+        theme: casual.title,
+        date: new Date(casual.date('YYYY-MM-DD')),
+        price: casual.integer(0, 20),
+        people: casual.integer(20, 40),
+        minAge: casual.integer(20, 30),
+        maxAge: casual.integer(30, 50),
+      }
+  
+      const parties: IParty[] = (await request(app).post(`/api/organizer/party`).
+      send({...partyTest}).
+      set('Authorization', organizerToken).
+      expect(httpStatus.OK)).body.parties;
+  
+      expect(parties.length).toBeGreaterThanOrEqual(1);
+
+      const listLength = parties.length;
+
+      const parties2: IParty[] = (await request(app).delete(`/api/organizer/party`).
+      send({id : parties[0].id}).
+      set('Authorization', organizerToken).
+      expect(httpStatus.OK)).body.parties;
+
+      expect(parties2.length).toEqual(listLength - 1);
+    });
+
   })
 });
