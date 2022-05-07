@@ -6,7 +6,6 @@ const orms_1 = require("orms");
 const user_helper_1 = require("services/user/user.helper");
 const types_1 = require("models/types");
 const sequelize_1 = require("sequelize");
-const moment_1 = (0, tslib_1.__importDefault)(require("moment"));
 const lodash_1 = (0, tslib_1.__importDefault)(require("lodash"));
 class UserService {
     static getUserParties(user) {
@@ -59,32 +58,15 @@ class UserService {
             return normalizedMatches;
         });
     }
-    static updateUserMatchStatus(user, match, status) {
-        var _a, _b;
+    static updateUserMatchStatus(user, match) {
+        var _a;
         return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-            const userMatchStatus = (_a = (yield orms_1.UserMatch.findOne({ where: { UserId: user.id } }))) === null || _a === void 0 ? void 0 : _a.status;
-            const matchUserStatus = (_b = (yield orms_1.UserMatch.findOne({ where: { UserId: match.id } }))) === null || _b === void 0 ? void 0 : _b.status;
-            if (!userMatchStatus || !matchUserStatus) {
-                throw 'Match and User are not actually matched';
-            }
-            if (status === types_1.MatchStatus.WAITING && matchUserStatus === types_1.MatchStatus.WAITING) {
+            const matchUserStatus = (_a = (yield orms_1.UserMatch.findOne({ where: { [sequelize_1.Op.and]: [{ UserId: match.id }, { MatchId: user.id }] } }))) === null || _a === void 0 ? void 0 : _a.status;
+            if (matchUserStatus === types_1.MatchStatus.WAITING) {
                 yield orms_1.UserMatch.update({ status: types_1.MatchStatus.ACCEPTED }, { where: { [sequelize_1.Op.and]: [{ UserId: user.id }, { MatchId: match.id }] } });
                 yield orms_1.UserMatch.update({ status: types_1.MatchStatus.ACCEPTED }, { where: { [sequelize_1.Op.and]: [{ UserId: match.id }, { MatchId: user.id }] } });
                 return null;
             }
-            yield orms_1.UserMatch.update({ status }, { where: { [sequelize_1.Op.and]: [{ UserId: user.id }, { MatchId: match.id }] } });
-        });
-    }
-    static updateAllUnavailableFromYesterdayToUnchecked() {
-        return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-            const todayFirstHour = (0, moment_1.default)().startOf('day').add(6, 'hours').toDate();
-            yield orms_1.UserMatch.update({ status: types_1.MatchStatus.UNCHECKED }, { where: {
-                    [sequelize_1.Op.and]: [
-                        { status: types_1.MatchStatus.UNAVAILABLE },
-                        { createdAt: { [sequelize_1.Op.lt]: todayFirstHour } }
-                    ],
-                },
-            });
         });
     }
     static addParty(user, party) {

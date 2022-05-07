@@ -137,6 +137,27 @@ describe('## organizer', () => {
             expect(parties[0].theme).toEqual(partyTest.theme);
             expect(parties[0].price).toEqual(partyTest.price);
         }));
+        test('Should be able to create delete party for organizer', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+            const partyTest = {
+                theme: casual_1.default.title,
+                date: new Date(casual_1.default.date('YYYY-MM-DD')),
+                price: casual_1.default.integer(0, 20),
+                people: casual_1.default.integer(20, 40),
+                minAge: casual_1.default.integer(20, 30),
+                maxAge: casual_1.default.integer(30, 50),
+            };
+            const parties = (yield (0, supertest_1.default)(index_1.default).post(`/api/organizer/party`).
+                send(Object.assign({}, partyTest)).
+                set('Authorization', organizerToken).
+                expect(http_status_1.default.OK)).body.parties;
+            expect(parties.length).toBeGreaterThanOrEqual(1);
+            const listLength = parties.length;
+            const parties2 = (yield (0, supertest_1.default)(index_1.default).delete(`/api/organizer/party`).
+                send({ id: parties[0].id }).
+                set('Authorization', organizerToken).
+                expect(http_status_1.default.OK)).body.parties;
+            expect(parties2.length).toEqual(listLength - 1);
+        }));
     });
 });
 //# sourceMappingURL=organizer.test.js.map

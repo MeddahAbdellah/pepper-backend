@@ -13,6 +13,9 @@ const normalizeUserMatches = (userMatches: User[]): IMatch[] => {
     job: match.job,
     imgs: match.imgs,
     interests: match.interests,
+    facebook: match.facebook,
+    instagram: match.instagram,
+    snapchat: match.snapchat,
     status: (match as unknown as any)['UserMatch.status'],
   }))
 }

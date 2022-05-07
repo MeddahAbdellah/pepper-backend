@@ -144,7 +144,7 @@ describe('## User', () => {
       });
 
       test('Query should return the list of matches', () => expect(matches).toEqual(
-        expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.UNAVAILABLE }])
+        expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.WAITING }])
       ));
 
       test('Should be Able to get matches of user', async () => {
@@ -153,7 +153,7 @@ describe('## User', () => {
           expect(httpStatus.OK)).body.matches;
 
         expect(returnMatches).toEqual(
-          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.UNAVAILABLE }])
+          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.WAITING }])
         )
       });
 
@@ -162,7 +162,7 @@ describe('## User', () => {
         const userMatches = await userAfterMatch?.getMatches({ raw: true });
         const normalizedMatches = normalizeUserMatches(userMatches || []);
         expect(normalizedMatches).toEqual(
-          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.UNAVAILABLE }])
+          expect.arrayContaining([{ ..._.omit(user2, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.WAITING }])
         );
       });
 
@@ -172,7 +172,7 @@ describe('## User', () => {
         const matches = await userAfterMatch?.getMatches({ raw: true });
         const normalizedMatches = normalizeUserMatches(matches || []);
         expect(normalizedMatches).toEqual(
-          expect.arrayContaining([{ ..._.omit(user1, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.UNAVAILABLE }])
+          expect.arrayContaining([{ ..._.omit(user1, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.WAITING }])
         );
       });
 
@@ -197,7 +197,7 @@ describe('## User', () => {
         const user2AfterMatchMatches = await user2AfterMatch?.getMatches({ raw: true });
         const normalizedUser2Matches = normalizeUserMatches(user2AfterMatchMatches || []);
         expect(normalizedUser2Matches).toEqual(
-          expect.arrayContaining([{ ..._.omit(user1, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.UNAVAILABLE }])
+          expect.arrayContaining([{ ..._.omit(user1, ['createdAt', 'deletedAt', 'updatedAt']), status: MatchStatus.WAITING }])
         );
       });
 
@@ -218,7 +218,7 @@ describe('## User', () => {
       test('should NOT be able to update match status to UNCHECKED', async () => {
         await request(app).put(`/api/user/matches`).
           set('Authorization', tokenOfUser1).
-          send({ matchId: user2.id, status: MatchStatus.UNCHECKED }).
+          send({ matchId: user2.id, status: MatchStatus.WAITING }).
           expect(httpStatus.BAD_REQUEST);
       });
 

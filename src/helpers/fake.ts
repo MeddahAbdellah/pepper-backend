@@ -10,10 +10,8 @@ casual.define('phoneNumber', () => casual.numerify('06########') );
 casual.define('product', () => ({ name: casual.word, price: casual.integer(3, 20) }) );
 casual.define('match_status', () => [
   MatchStatus.ACCEPTED,
-  MatchStatus.UNAVAILABLE,
-  MatchStatus.UNCHECKED,
   MatchStatus.WAITING,
-][casual.integer(0, 3)]);
+][casual.integer(0, 1)]);
 
 const createFakeUser = async (overrideProps?: Partial<IUser>): Promise<User> => {
   const user = await User.create({
@@ -25,6 +23,9 @@ const createFakeUser = async (overrideProps?: Partial<IUser>): Promise<User> => 
     job: casual.company_name,
     imgs: [(casual as unknown as any).portrait, (casual as unknown as any).portrait, (casual as unknown as any).portrait],
     interests: [casual.word, casual.word, casual.word],
+    facebook: casual.name,
+    instagram: casual.name,
+    snapchat: casual.name,
     ...(overrideProps ? overrideProps : {})
   });
 

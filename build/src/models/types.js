@@ -8,8 +8,6 @@ var MatchStatus;
 (function (MatchStatus) {
     MatchStatus["ACCEPTED"] = "accepted";
     MatchStatus["WAITING"] = "waiting";
-    MatchStatus["UNCHECKED"] = "unchecked";
-    MatchStatus["UNAVAILABLE"] = "unavailable";
 })(MatchStatus = exports.MatchStatus || (exports.MatchStatus = {}));
 var UserPartyStatus;
 (function (UserPartyStatus) {

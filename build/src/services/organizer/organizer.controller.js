@@ -116,6 +116,22 @@ class OrganizerController {
             return res.json({ parties: normalizedParties });
         });
     }
+    static deleteParty(req, res) {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            const organizer = yield orms_1.Organizer.findOne({ where: { id: req.organizer.id } });
+            const party = yield orms_1.Party.findByPk(req.body.id);
+            const partyOrganizer = yield (party === null || party === void 0 ? void 0 : party.getOrganizer());
+            if ((partyOrganizer != undefined) && (party != null) && (partyOrganizer.id == req.organizer.id)) {
+                yield party.destroy();
+            }
+            if (!organizer) {
+                res.status(http_status_1.default.NOT_FOUND);
+                return res.json({ message: 'User does not exist' });
+            }
+            const normalizedParties = yield organizer_service_1.OrganizerService.getOrganizerParties(organizer);
+            return res.json({ parties: normalizedParties });
+        });
+    }
 }
 (0, tslib_1.__decorate)([
     (0, helpers_1.validation)(joi_1.default.object({
@@ -162,5 +178,10 @@ class OrganizerController {
 (0, tslib_1.__decorate)([
     (0, helpers_1.validation)(joi_1.default.object({}))
 ], OrganizerController, "getOrganizerParties", null);
+(0, tslib_1.__decorate)([
+    (0, helpers_1.validation)(joi_1.default.object({
+        id: joi_1.default.number().required(),
+    }))
+], OrganizerController, "deleteParty", null);
 exports.OrganizerController = OrganizerController;
 //# sourceMappingURL=organizer.controller.js.map
