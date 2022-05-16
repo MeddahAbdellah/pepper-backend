@@ -1,7 +1,6 @@
 import { User, Party, Organizer } from "orms";
 import { Gender, IUser, MatchStatus, OrganizerStatus } from 'models/types';
 import casual from 'casual';
-import sha256 from 'crypto-js/sha256';
 
 casual.define('portrait', () => ({ uri: `https://source.unsplash.com/collection/9948714?${casual.integer(1, 100)}` }));
 casual.define('bar', () => ({ uri: `https://source.unsplash.com/collection/3639161?${casual.integer(1, 20)}` }));
@@ -10,10 +9,8 @@ casual.define('phoneNumber', () => casual.numerify('06########') );
 casual.define('product', () => ({ name: casual.word, price: casual.integer(3, 20) }) );
 casual.define('match_status', () => [
   MatchStatus.ACCEPTED,
-  MatchStatus.UNAVAILABLE,
-  MatchStatus.UNCHECKED,
   MatchStatus.WAITING,
-][casual.integer(0, 3)]);
+][casual.integer(0, 1)]);
 
 const createFakeUser = async (overrideProps?: Partial<IUser>): Promise<User> => {
   const user = await User.create({
@@ -25,6 +22,9 @@ const createFakeUser = async (overrideProps?: Partial<IUser>): Promise<User> => 
     job: casual.company_name,
     imgs: [(casual as unknown as any).portrait, (casual as unknown as any).portrait, (casual as unknown as any).portrait],
     interests: [casual.word, casual.word, casual.word],
+    facebook: casual.name,
+    instagram: casual.name,
+    snapchat: casual.name,
     ...(overrideProps ? overrideProps : {})
   });
 
@@ -35,7 +35,7 @@ const createFakeOrganizer = async (password = casual.password as any): Promise<O
   const organizer = await Organizer.create({
     phoneNumber: (casual as unknown as any).phoneNumber,
     userName: casual.username,
-    password: sha256(password).toString(),
+    password: password,
     title: casual.title,
     location: casual.address,
     description: casual.description,
@@ -53,7 +53,7 @@ const createFakePartyWithItsOrganizer = async (): Promise<Party> => {
 
     phoneNumber: (casual as unknown as any).phoneNumber,
     userName: casual.username,
-    password: sha256(casual.password).toString(),
+    password: casual.password,
     title: casual.title,
     location: casual.address,
     description: casual.description,

@@ -37,8 +37,10 @@ describe('## Init Data', () => {
             const status = (fake as unknown as any).match_status;
             //@ts-ignore
             await user.addMatch(users[matchKey], { through: { status }});
+            if ( status === 'ACCEPTED' ) {
             //@ts-ignore
             await users[matchKey].addMatch(user , { through: { status }});
+            }
           } catch(e){}
         }
       })

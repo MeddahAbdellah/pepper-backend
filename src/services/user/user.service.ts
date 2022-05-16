@@ -2,7 +2,6 @@ import { User, UserMatch, Party, Organizer, UserParty } from "orms";
 import { normalizeUserMatches, normalizeOrganizerParties } from 'services/user/user.helper';
 import { IParty, IMatch, MatchStatus, OrganizerStatus, UserPartyStatus } from 'models/types';
 import { Op } from 'sequelize';
-import moment from 'moment';
 import _ from 'lodash';
 export class UserService {
   public static async getUserParties(user: User): Promise<IParty[]> {
@@ -59,35 +58,14 @@ export class UserService {
     return normalizedMatches;
   }
 
-  public static async updateUserMatchStatus(user: User, match: User, status: MatchStatus): Promise<void | null> {
-    const userMatchStatus = (await UserMatch.findOne({ where: { UserId: user.id}}))?.status;
-    const matchUserStatus = (await UserMatch.findOne({ where: { UserId: match.id}}))?.status;
+  public static async updateUserMatchStatus(user: User, match: User): Promise<void | null> {
+    const matchUserStatus = (await UserMatch.findOne({ where: { [Op.and]: [{ UserId: match.id }, { MatchId: user.id }] } }))?.status;
 
-    if(!userMatchStatus || !matchUserStatus) {
-      throw 'Match and User are not actually matched';
-    }
-
-    if( status === MatchStatus.WAITING && matchUserStatus === MatchStatus.WAITING) {
+    if(matchUserStatus === MatchStatus.WAITING) {
       await UserMatch.update({ status: MatchStatus.ACCEPTED }, { where: { [Op.and]: [{ UserId: user.id }, { MatchId: match.id }] } });
       await UserMatch.update({ status: MatchStatus.ACCEPTED }, { where: { [Op.and]: [{ UserId: match.id }, { MatchId: user.id }] } });
       return null;
     }
-
-    await UserMatch.update({ status }, { where: { [Op.and]: [{ UserId: user.id }, { MatchId: match.id }] } });
-  }
-
-  public static async updateAllUnavailableFromYesterdayToUnchecked(): Promise<void> {
-    const todayFirstHour = moment().startOf('day').add(6, 'hours').toDate();
-    await UserMatch.update(
-      { status: MatchStatus.UNCHECKED },
-      { where: { 
-        [Op.and]: [
-          { status: MatchStatus.UNAVAILABLE },
-          { createdAt: { [Op.lt]: todayFirstHour } }
-        ],
-        },
-      },
-    );
   }
   
   // TODO:  redo this logic properly

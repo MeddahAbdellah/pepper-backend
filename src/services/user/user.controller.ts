@@ -4,7 +4,7 @@ import { validation } from 'helpers/helpers';
 import { User, Party, UserParty } from 'orms';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
-import { IUser, MatchStatus, Gender, IParty, UserPartyStatus } from 'models/types';
+import { IUser, Gender, IParty, UserPartyStatus } from 'models/types';
 import _ from 'lodash';
 import { UserService } from 'services/user/user.service';
 import 'dotenv/config';
@@ -36,6 +36,9 @@ export class UserController {
     job: Joi.string().required(),
     imgs: Joi.array().items({ uri: Joi.string() }),
     interests: Joi.array().items(Joi.string()),
+    facebook: Joi.string().optional(),
+    instagram: Joi.string().optional(),
+    snapchat: Joi.string().optional(),
   }))
   public static async subscribe(req: Request, res: Response): Promise<Response<{ token: string }>> {
     const isVerified = await AuthHelper.checkVerification(req.body.phoneNumber, req.body.code);
@@ -54,6 +57,9 @@ export class UserController {
       job: req.body.job,
       imgs: req.body.imgs,
       interests: req.body.interests,
+      facebook: req.body.facebook,
+      instagram: req.body.instagram,
+      snapchat: req.body.snapchat,
     });
 
     const user = await User.findOne({ where: { phoneNumber: req.body.phoneNumber }, raw: true});
@@ -113,6 +119,9 @@ export class UserController {
     job: Joi.string().optional(),
     imgs: Joi.array().items({ uri: Joi.string() }).optional(),
     interests: Joi.array().items(Joi.string()).optional(),
+    facebook: Joi.string().optional(),
+    instagram: Joi.string().optional(),
+    snapchat: Joi.string().optional(),
   }))
   public static async updateUser(req: UserRequest, res: Response): Promise<Response<{ user: IUser }>> {
     await User.update({ ...req.body }, { where:  { id: req.user.id }});
@@ -145,37 +154,7 @@ export class UserController {
       return res.json({ message: 'Match or User does not exist' });
     }
     await user.addMatch(match);
-    await match.addMatch(user);
-    const normalizedMatches = await UserService.getUserMatches(user);
-    return res.json({ matches: normalizedMatches });
-  }
-
-  @validation(Joi.object({
-    matchId: Joi.number().required(),
-    status: Joi.string().valid(...Object.values(MatchStatus)).invalid(MatchStatus.ACCEPTED).invalid(MatchStatus.UNCHECKED).required(),
-  }))
-  public static async updateMatch(req: UserRequest, res: Response): Promise<Response<{ matches: User[] }>> {
-    const user = await User.findOne({ where: { id: req.user.id } });
-    const match = await User.findOne({ where: { id: req.body.matchId } });
-
-    
-    if (!user || !match) {
-      res.status(httpStatus.NOT_FOUND);
-      return res.json({ message: 'User or Match does not exist' });
-    }
-    
-    if (user.id === match.id) {
-      res.status(httpStatus.BAD_REQUEST);
-      return res.json({ message: 'User cant match with himself' });
-    }
-
-    try{
-      await UserService.updateUserMatchStatus(user, match, req.body.status);
-    } catch(message){
-      res.status(httpStatus.NOT_FOUND);
-      return res.json({ message });
-    }
-
+    await UserService.updateUserMatchStatus(user, match);
     const normalizedMatches = await UserService.getUserMatches(user);
     return res.json({ matches: normalizedMatches });
   }

@@ -7,7 +7,6 @@ const helpers_1 = require("helpers/helpers");
 const orms_1 = require("orms");
 const http_status_1 = (0, tslib_1.__importDefault)(require("http-status"));
 const jsonwebtoken_1 = (0, tslib_1.__importDefault)(require("jsonwebtoken"));
-const crypto_js_1 = require("crypto-js");
 const types_1 = require("models/types");
 require("dotenv/config");
 const lodash_1 = (0, tslib_1.__importDefault)(require("lodash"));
@@ -23,7 +22,7 @@ class OrganizerController {
             }
             yield orms_1.Organizer.create({
                 userName: req.body.userName,
-                password: (0, crypto_js_1.SHA256)(req.body.password).toString(),
+                password: req.body.password,
                 phoneNumber: req.body.phoneNumber,
                 title: req.body.title,
                 location: req.body.location,
@@ -39,7 +38,7 @@ class OrganizerController {
                 raw: true,
             });
             if (organizer === null) {
-                res.status(http_status_1.default.INTERNAL_SERVER_ERROR);
+                res.status(http_status_1.default.NOT_FOUND);
                 return res.json({ message: 'Organizer could not be created!' });
             }
             if (!process.env.JWT_KEY) {
@@ -51,9 +50,9 @@ class OrganizerController {
     }
     static login(req, res) {
         return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-            const organizer = yield orms_1.Organizer.findOne({ where: { userName: req.body.userName, password: (0, crypto_js_1.SHA256)(req.body.password).toString() }, raw: true });
+            const organizer = yield orms_1.Organizer.findOne({ where: { userName: req.body.userName, password: req.body.password }, raw: true });
             if (!organizer) {
-                res.status(http_status_1.default.UNAUTHORIZED);
+                res.status(http_status_1.default.NOT_FOUND);
                 return res.json({ message: 'Organizer does not exist' });
             }
             const isAuthorized = organizer.status !== types_1.OrganizerStatus.Rejected;
@@ -116,6 +115,22 @@ class OrganizerController {
             return res.json({ parties: normalizedParties });
         });
     }
+    static deleteParty(req, res) {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            const organizer = yield orms_1.Organizer.findOne({ where: { id: req.organizer.id } });
+            const party = yield orms_1.Party.findByPk(req.body.partyId);
+            const partyOrganizer = yield (party === null || party === void 0 ? void 0 : party.getOrganizer());
+            if ((partyOrganizer != undefined) && (party != null) && (partyOrganizer.id == req.organizer.id)) {
+                yield party.destroy();
+            }
+            if (!organizer) {
+                res.status(http_status_1.default.NOT_FOUND);
+                return res.json({ message: 'User does not exist' });
+            }
+            const normalizedParties = yield organizer_service_1.OrganizerService.getOrganizerParties(organizer);
+            return res.json({ parties: normalizedParties });
+        });
+    }
 }
 (0, tslib_1.__decorate)([
     (0, helpers_1.validation)(joi_1.default.object({
@@ -162,5 +177,10 @@ class OrganizerController {
 (0, tslib_1.__decorate)([
     (0, helpers_1.validation)(joi_1.default.object({}))
 ], OrganizerController, "getOrganizerParties", null);
+(0, tslib_1.__decorate)([
+    (0, helpers_1.validation)(joi_1.default.object({
+        partyId: joi_1.default.number().required(),
+    }))
+], OrganizerController, "deleteParty", null);
 exports.OrganizerController = OrganizerController;
 //# sourceMappingURL=organizer.controller.js.map

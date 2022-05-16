@@ -10,6 +10,8 @@ RUN npm cache clear --force
 
 RUN npm install
 
+RUN npm run migrate
+
 ENV PORT=7550
 
 EXPOSE 7550

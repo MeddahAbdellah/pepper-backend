@@ -4,7 +4,6 @@ import { validation } from 'helpers/helpers';
 import { Organizer, Party } from 'orms';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
-import { SHA256 } from 'crypto-js';
 import { IOrganizer, IParty, OrganizerStatus } from 'models/types';
 import 'dotenv/config';
 import _ from 'lodash';
@@ -42,7 +41,7 @@ export class OrganizerController {
 
     await Organizer.create({
       userName: req.body.userName,
-      password: SHA256(req.body.password).toString(),
+      password: req.body.password,
       phoneNumber: req.body.phoneNumber,
       title: req.body.title,
       location: req.body.location,
@@ -55,12 +54,12 @@ export class OrganizerController {
 
     const organizer = await Organizer.findOne({ 
       where: { userName: req.body.userName }, 
-      attributes: {exclude: ['password','createdAt','updatedAt','deletedAt']},
+      attributes: { exclude: ['password','createdAt','updatedAt','deletedAt'] },
       raw: true,
     });
     
     if (organizer === null) {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR);
+      res.status(httpStatus.NOT_FOUND);
       return res.json({ message: 'Organizer could not be created!' });
     }
 
@@ -77,9 +76,9 @@ export class OrganizerController {
     password: Joi.string().required(),
   }))
   public static async login(req: Request, res: Response): Promise<Response<{ token: string }>> {
-    const organizer = await Organizer.findOne({ where: { userName: req.body.userName, password: SHA256(req.body.password).toString() }, raw: true});
+    const organizer = await Organizer.findOne({ where: { userName: req.body.userName, password: req.body.password }, raw: true});
     if (!organizer) {
-      res.status(httpStatus.UNAUTHORIZED);
+      res.status(httpStatus.NOT_FOUND);
       return res.json({ message: 'Organizer does not exist' });
     }
 
@@ -114,8 +113,8 @@ export class OrganizerController {
     location: Joi.string().optional(),
     description: Joi.string().optional(),
     imgs: Joi.array().items({ uri: Joi.string() }).optional(),
-    foods: Joi.array().items({ name: Joi.string(), price:Joi.number() }).optional(),
-    drinks: Joi.array().items({ name: Joi.string(), price:Joi.number() }).optional()
+    foods: Joi.array().items({ name: Joi.string(), price: Joi.number() }).optional(),
+    drinks: Joi.array().items({ name: Joi.string(), price: Joi.number() }).optional()
   }))
   public static async updateOrganizer(req: OrganizerRequest, res: Response): Promise<Response<{ organizer: IOrganizer }>> {
     await Organizer.update({ ...req.body }, { where:  { id: req.organizer.id }});
@@ -169,13 +168,13 @@ export class OrganizerController {
   }
 
   @validation(Joi.object({
-    id: Joi.number().required(),
+    partyId: Joi.number().required(),
   }))
   public static async deleteParty(req: OrganizerRequest, res: Response): Promise<Response<{ parties: IParty[] }>> {
     const organizer = await Organizer.findOne({ where: { id: req.organizer.id }});
 
 
-    const party = await Party.findByPk(req.body.id);
+    const party = await Party.findByPk(req.body.partyId);
     
     const partyOrganizer = await party?.getOrganizer();
 

@@ -38,6 +38,9 @@ class UserController {
                 job: req.body.job,
                 imgs: req.body.imgs,
                 interests: req.body.interests,
+                facebook: req.body.facebook,
+                instagram: req.body.instagram,
+                snapchat: req.body.snapchat,
             });
             const user = yield orms_1.User.findOne({ where: { phoneNumber: req.body.phoneNumber }, raw: true });
             if (!user) {
@@ -107,30 +110,7 @@ class UserController {
                 return res.json({ message: 'Match or User does not exist' });
             }
             yield user.addMatch(match);
-            yield match.addMatch(user);
-            const normalizedMatches = yield user_service_1.UserService.getUserMatches(user);
-            return res.json({ matches: normalizedMatches });
-        });
-    }
-    static updateMatch(req, res) {
-        return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-            const user = yield orms_1.User.findOne({ where: { id: req.user.id } });
-            const match = yield orms_1.User.findOne({ where: { id: req.body.matchId } });
-            if (!user || !match) {
-                res.status(http_status_1.default.NOT_FOUND);
-                return res.json({ message: 'User or Match does not exist' });
-            }
-            if (user.id === match.id) {
-                res.status(http_status_1.default.BAD_REQUEST);
-                return res.json({ message: 'User cant match with himself' });
-            }
-            try {
-                yield user_service_1.UserService.updateUserMatchStatus(user, match, req.body.status);
-            }
-            catch (message) {
-                res.status(http_status_1.default.NOT_FOUND);
-                return res.json({ message });
-            }
+            yield user_service_1.UserService.updateUserMatchStatus(user, match);
             const normalizedMatches = yield user_service_1.UserService.getUserMatches(user);
             return res.json({ matches: normalizedMatches });
         });
@@ -233,6 +213,9 @@ class UserController {
         job: joi_1.default.string().required(),
         imgs: joi_1.default.array().items({ uri: joi_1.default.string() }),
         interests: joi_1.default.array().items(joi_1.default.string()),
+        facebook: joi_1.default.string().optional(),
+        instagram: joi_1.default.string().optional(),
+        snapchat: joi_1.default.string().optional(),
     }))
 ], UserController, "subscribe", null);
 (0, tslib_1.__decorate)([
@@ -251,6 +234,9 @@ class UserController {
         job: joi_1.default.string().optional(),
         imgs: joi_1.default.array().items({ uri: joi_1.default.string() }).optional(),
         interests: joi_1.default.array().items(joi_1.default.string()).optional(),
+        facebook: joi_1.default.string().optional(),
+        instagram: joi_1.default.string().optional(),
+        snapchat: joi_1.default.string().optional(),
     }))
 ], UserController, "updateUser", null);
 (0, tslib_1.__decorate)([
@@ -261,12 +247,6 @@ class UserController {
         matchId: joi_1.default.number().required(),
     }))
 ], UserController, "addMatch", null);
-(0, tslib_1.__decorate)([
-    (0, helpers_1.validation)(joi_1.default.object({
-        matchId: joi_1.default.number().required(),
-        status: joi_1.default.string().valid(...Object.values(types_1.MatchStatus)).invalid(types_1.MatchStatus.ACCEPTED).invalid(types_1.MatchStatus.UNCHECKED).required(),
-    }))
-], UserController, "updateMatch", null);
 (0, tslib_1.__decorate)([
     (0, helpers_1.validation)(joi_1.default.object({
         matchId: joi_1.default.number().required(),

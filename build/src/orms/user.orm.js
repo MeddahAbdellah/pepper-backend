@@ -24,9 +24,9 @@ const initUser = (sequelize) => {
     }, { sequelize, paranoid: false });
     UserMatch.init({
         status: {
-            type: sequelize_1.DataTypes.ENUM(types_1.MatchStatus.ACCEPTED, types_1.MatchStatus.UNAVAILABLE, types_1.MatchStatus.UNCHECKED, types_1.MatchStatus.WAITING),
+            type: sequelize_1.DataTypes.ENUM(types_1.MatchStatus.ACCEPTED, types_1.MatchStatus.WAITING),
             allowNull: false,
-            defaultValue: types_1.MatchStatus.UNAVAILABLE,
+            defaultValue: types_1.MatchStatus.WAITING,
         },
     }, { sequelize, paranoid: false });
     User.init({
@@ -66,7 +66,16 @@ const initUser = (sequelize) => {
         interests: {
             type: sequelize_1.DataTypes.JSON,
             allowNull: false,
-        }
+        },
+        facebook: {
+            type: sequelize_1.DataTypes.TEXT,
+        },
+        instagram: {
+            type: sequelize_1.DataTypes.TEXT,
+        },
+        snapchat: {
+            type: sequelize_1.DataTypes.TEXT,
+        },
     }, { sequelize, paranoid: true });
 };
 exports.initUser = initUser;

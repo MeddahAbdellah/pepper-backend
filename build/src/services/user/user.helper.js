@@ -14,13 +14,16 @@ const normalizeUserMatches = (userMatches) => {
         job: match.job,
         imgs: match.imgs,
         interests: match.interests,
+        facebook: match.facebook,
+        instagram: match.instagram,
+        snapchat: match.snapchat,
         status: match['UserMatch.status'],
     }));
 };
 exports.normalizeUserMatches = normalizeUserMatches;
 const normalizeOrganizerParties = (userParties) => {
     const normalizedOrganizerParty = lodash_1.default.map(userParties, (party) => {
-        return lodash_1.default.omit(party, ['UserParties', 'createdAt', 'updatedAt', 'deletedAt']);
+        return lodash_1.default.omit(party, ['password', 'userName', 'phoneNumber', 'UserParties', 'createdAt', 'updatedAt', 'deletedAt']);
     });
     return normalizedOrganizerParty;
 };

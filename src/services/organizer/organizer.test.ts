@@ -6,14 +6,12 @@ import { createFakeOrganizer, createFakeParty, fake } from 'helpers/fake';
 import { syncDbModels } from 'orms/pepperDb';
 import { IOrganizer, IParty } from 'models/types';
 import jwt from 'jsonwebtoken';
-import SHA256 from 'crypto-js/sha256';
-import casual from 'casual';
 
 describe('## organizer', () => {
 
   let organizerObject: Organizer;
   let organizerObject2: Organizer;
-  const organizerPassword = casual.password;
+  const organizerPassword = fake.password;
   let organizerToken: string;
 
   beforeAll(async () => {
@@ -31,7 +29,7 @@ describe('## organizer', () => {
     });
   
     test('should NOT be able to login if organizer does not exist', async () => {
-      await request(app).post('/api/organizer/login').send({ userName: 'Test', password: '123456' }).expect(httpStatus.UNAUTHORIZED);
+      await request(app).post('/api/organizer/login').send({ userName: 'Test', password: '123456' }).expect(httpStatus.NOT_FOUND);
     });
 
     test('should be able to subscribe with userName and Password', async () => {
@@ -50,7 +48,7 @@ describe('## organizer', () => {
 
       const { token } = (await request(app).put('/api/organizer/login').send({ ...organizerInfoTest }).expect(httpStatus.OK)).body;
       const subscribedOrganizer = await Organizer.findOne({ 
-        where: { userName:organizerInfoTest.userName, password: SHA256(organizerInfoTest.password).toString() },
+        where: { userName: organizerInfoTest.userName, password: organizerInfoTest.password },
         raw: true
       }) as Organizer;
       
@@ -159,12 +157,12 @@ describe('## organizer', () => {
     test('Should be able to create new party for organizer', async() => {
   
       const partyTest = {
-        theme: casual.title,
-        date: new Date(casual.date('YYYY-MM-DD')),
-        price: casual.integer(0, 20),
-        people: casual.integer(20, 40),
-        minAge: casual.integer(20, 30),
-        maxAge: casual.integer(30, 50),
+        theme: fake.title,
+        date: new Date(fake.date('YYYY-MM-DD')),
+        price: fake.integer(0, 20),
+        people: fake.integer(20, 40),
+        minAge: fake.integer(20, 30),
+        maxAge: fake.integer(30, 50),
       }
   
       const parties: IParty[] = (await request(app).post(`/api/organizer/party`).
@@ -180,12 +178,12 @@ describe('## organizer', () => {
     test('Should be able to create delete party for organizer', async() => {
   
       const partyTest = {
-        theme: casual.title,
-        date: new Date(casual.date('YYYY-MM-DD')),
-        price: casual.integer(0, 20),
-        people: casual.integer(20, 40),
-        minAge: casual.integer(20, 30),
-        maxAge: casual.integer(30, 50),
+        theme: fake.title,
+        date: new Date(fake.date('YYYY-MM-DD')),
+        price: fake.integer(0, 20),
+        people: fake.integer(20, 40),
+        minAge: fake.integer(20, 30),
+        maxAge: fake.integer(30, 50),
       }
   
       const parties: IParty[] = (await request(app).post(`/api/organizer/party`).
@@ -198,7 +196,7 @@ describe('## organizer', () => {
       const listLength = parties.length;
 
       const parties2: IParty[] = (await request(app).delete(`/api/organizer/party`).
-      send({id : parties[0].id}).
+      send({ partyId: parties[0].id}).
       set('Authorization', organizerToken).
       expect(httpStatus.OK)).body.parties;
 

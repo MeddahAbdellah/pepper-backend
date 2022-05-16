@@ -6,7 +6,6 @@ const orms_1 = require("orms");
 const types_1 = require("models/types");
 const casual_1 = (0, tslib_1.__importDefault)(require("casual"));
 exports.fake = casual_1.default;
-const sha256_1 = (0, tslib_1.__importDefault)(require("crypto-js/sha256"));
 casual_1.default.define('portrait', () => ({ uri: `https://source.unsplash.com/collection/9948714?${casual_1.default.integer(1, 100)}` }));
 casual_1.default.define('bar', () => ({ uri: `https://source.unsplash.com/collection/3639161?${casual_1.default.integer(1, 20)}` }));
 casual_1.default.define('gender', () => casual_1.default.boolean ? types_1.Gender.MAN : types_1.Gender.WOMAN);
@@ -14,12 +13,10 @@ casual_1.default.define('phoneNumber', () => casual_1.default.numerify('06######
 casual_1.default.define('product', () => ({ name: casual_1.default.word, price: casual_1.default.integer(3, 20) }));
 casual_1.default.define('match_status', () => [
     types_1.MatchStatus.ACCEPTED,
-    types_1.MatchStatus.UNAVAILABLE,
-    types_1.MatchStatus.UNCHECKED,
     types_1.MatchStatus.WAITING,
-][casual_1.default.integer(0, 3)]);
+][casual_1.default.integer(0, 1)]);
 const createFakeUser = (overrideProps) => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
-    const user = yield orms_1.User.create(Object.assign({ name: casual_1.default.first_name, gender: casual_1.default.gender, phoneNumber: casual_1.default.phoneNumber, address: casual_1.default.address, description: casual_1.default.description, job: casual_1.default.company_name, imgs: [casual_1.default.portrait, casual_1.default.portrait, casual_1.default.portrait], interests: [casual_1.default.word, casual_1.default.word, casual_1.default.word] }, (overrideProps ? overrideProps : {})));
+    const user = yield orms_1.User.create(Object.assign({ name: casual_1.default.first_name, gender: casual_1.default.gender, phoneNumber: casual_1.default.phoneNumber, address: casual_1.default.address, description: casual_1.default.description, job: casual_1.default.company_name, imgs: [casual_1.default.portrait, casual_1.default.portrait, casual_1.default.portrait], interests: [casual_1.default.word, casual_1.default.word, casual_1.default.word], facebook: casual_1.default.name, instagram: casual_1.default.name, snapchat: casual_1.default.name }, (overrideProps ? overrideProps : {})));
     return user.get({ plain: true });
 });
 exports.createFakeUser = createFakeUser;
@@ -27,7 +24,7 @@ const createFakeOrganizer = (password = casual_1.default.password) => (0, tslib_
     const organizer = yield orms_1.Organizer.create({
         phoneNumber: casual_1.default.phoneNumber,
         userName: casual_1.default.username,
-        password: (0, sha256_1.default)(password).toString(),
+        password: password,
         title: casual_1.default.title,
         location: casual_1.default.address,
         description: casual_1.default.description,
@@ -43,7 +40,7 @@ const createFakePartyWithItsOrganizer = () => (0, tslib_1.__awaiter)(void 0, voi
     const organizer = yield orms_1.Organizer.create({
         phoneNumber: casual_1.default.phoneNumber,
         userName: casual_1.default.username,
-        password: (0, sha256_1.default)(casual_1.default.password).toString(),
+        password: casual_1.default.password,
         title: casual_1.default.title,
         location: casual_1.default.address,
         description: casual_1.default.description,

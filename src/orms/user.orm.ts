@@ -21,6 +21,9 @@ class User extends Model {
   public job!: string;
   public imgs!: Array<{ uri: string}>;
   public interests!: string[];
+  public facebook!: string;
+  public instagram!: string;
+  public snapchat!: string;
   public readonly matches!: UserMatch[];
   public readonly parties!: Party[];
 
@@ -60,9 +63,9 @@ const initUser = (sequelize: Sequelize) => {
 
   UserMatch.init({
     status: {
-      type: DataTypes.ENUM(MatchStatus.ACCEPTED, MatchStatus.UNAVAILABLE, MatchStatus.UNCHECKED, MatchStatus.WAITING),
+      type: DataTypes.ENUM(MatchStatus.ACCEPTED,MatchStatus.WAITING),
       allowNull: false,
-      defaultValue: MatchStatus.UNAVAILABLE,
+      defaultValue: MatchStatus.WAITING,
     },
   }, { sequelize, paranoid: false });
 
@@ -103,7 +106,16 @@ const initUser = (sequelize: Sequelize) => {
     interests: {
       type: DataTypes.JSON,
       allowNull: false,
-    }
+    },
+    facebook: {
+      type: DataTypes.TEXT,
+    },
+    instagram: {
+      type: DataTypes.TEXT,
+    },
+    snapchat: {
+      type: DataTypes.TEXT,
+    },
   }, { sequelize, paranoid: true });
 };
 
