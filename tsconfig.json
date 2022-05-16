@@ -24,7 +24,7 @@
     "esModuleInterop": true,
   },
   "include": [
-    "src/**/*",
+    "src/**/*", "migrations",
   ],
   "exclude": [
     "src/scripts/*",

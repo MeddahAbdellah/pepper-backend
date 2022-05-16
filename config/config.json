@@ -1,0 +1,26 @@
+{
+  "development": {
+    "username": "pepper",
+    "password": "sayfEnnar",
+    "database": "pepper",
+    "host": "127.0.0.1",
+    "port": 5439,
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "pepper",
+    "password": "sayfEnnar",
+    "database": "pepper",
+    "host": "127.0.0.1",
+    "port": 5439,
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "pepper",
+    "password": "sayfEnnar",
+    "database": "pepper",
+    "host": "db",
+    "port": 5432,
+    "dialect": "postgres"
+  }
+}

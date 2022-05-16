@@ -32,6 +32,7 @@
     "typescript": "~4.4.4"
   },
   "scripts": {
+    "start:prod": "npx pm2 start \"npm start\" --name pepper-backend",
     "start": "node -r ts-node/register/transpile-only -r tsconfig-paths/register build/src/index.js",
     "clean": "rimraf coverage build tmp",
     "prebuild": "npm run lint",
@@ -43,7 +44,8 @@
     "serve": "npx concurrently -k -n \"Typescript,Node\" -p \"[{name}]\" -c \"blue,green\" \"npm run build:watch\" \"npx nodemon\"",
     "serve:prod": "npx concurrently -k -n \"Typescript\" -p \"[{name}]\" -c \"blue\" \"npm run build\" && concurrently -k -n \"Node\" -p \"[{name}]\" -c \"green\" \"npm run start\"",
     "init-data": "npx jest .scripts/init-data.spec.ts",
-    "move-certs": "copyfiles src/certs/* build"
+    "move-certs": "copyfiles src/certs/* build",
+    "migrate": "npx sequelize db:migrate"
   },
   "author": "Jakub Synowiec <jsynowiec@users.noreply.github.com>",
   "license": "Apache-2.0",
@@ -73,6 +75,7 @@
     "lodash": "^4.17.21",
     "pg": "^8.7.1",
     "pg-hstore": "^2.3.4",
+    "pm2": "^5.2.0",
     "sequelize": "^6.14.0",
     "sequelize-cli": "^6.4.1",
     "tslib": "~2.3.1",
