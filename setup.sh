@@ -13,6 +13,8 @@ sudo systemctl start docker
 sudo systemctl enable docker
 sudo apt install docker-compose -y
 sudo apt install nginx
+sudo cp reverse-proxy.conf /etc/nginx/sites-available/reverse-proxy.conf
+
 sudo apt-get install software-properties-common
 sudo add-apt-repository ppa:certbot/certbot
 sudo apt-get update
