@@ -17,6 +17,7 @@ services:
   server:
     build: .
     environment:
+      WAIT_HOSTS: db:5432,
       DB_PORT: 5432
       DB_HOST: db
       NODE_ENV: prod
