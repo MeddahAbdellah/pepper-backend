@@ -4,6 +4,10 @@ services:
   db:
     image: postgres:11-alpine
     restart: always
+    healthcheck:
+      test: "pg_isready --username=pepper && psql --username=pepper --list"
+      timeout: 10s
+      retries: 20
     environment:
       POSTGRES_DB: pepper
       POSTGRES_USER: pepper
@@ -16,8 +20,10 @@ services:
 
   server:
     build: .
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      WAIT_HOSTS: db:5432,
       DB_PORT: 5432
       DB_HOST: db
       NODE_ENV: prod
