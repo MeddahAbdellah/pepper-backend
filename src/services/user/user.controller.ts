@@ -4,7 +4,7 @@ import { validation } from 'helpers/helpers';
 import { User, Party, UserParty } from 'orms';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
-import { IUser, MatchStatus, Gender, IParty, UserPartyStatus } from 'models/types';
+import { IUser, Gender, IParty, UserPartyStatus } from 'models/types';
 import _ from 'lodash';
 import { UserService } from 'services/user/user.service';
 import 'dotenv/config';
