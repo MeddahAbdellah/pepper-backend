@@ -10,7 +10,7 @@ RUN npm cache clear --force
 
 RUN npm install
 
-RUN npm run migrate
+RUN npm run migrate:prod
 
 ENV PORT=7550
 

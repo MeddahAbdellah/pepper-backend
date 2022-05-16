@@ -45,7 +45,8 @@
     "serve:prod": "npx concurrently -k -n \"Typescript\" -p \"[{name}]\" -c \"blue\" \"npm run build\" && concurrently -k -n \"Node\" -p \"[{name}]\" -c \"green\" \"npm run start\"",
     "init-data": "npx jest .scripts/init-data.spec.ts",
     "move-certs": "copyfiles src/certs/* build",
-    "migrate": "npx sequelize db:migrate"
+    "migrate": "npx sequelize db:migrate",
+    "migrate:prod": "npx sequelize db:migrate --env=production"
   },
   "author": "Jakub Synowiec <jsynowiec@users.noreply.github.com>",
   "license": "Apache-2.0",
