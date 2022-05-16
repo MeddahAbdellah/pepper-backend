@@ -1,3 +1,2 @@
-cd /home/pepper/backend
 echo running docker compose...
 docker-compose -f docker-compose-prod.yml up --build --remove-orphans --force-recreate -d

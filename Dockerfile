@@ -10,6 +10,10 @@ RUN npm cache clear --force
 
 RUN npm install
 
+RUN chmod +x /wait-for-it.sh
+
+ENTRYPOINT ["./wait-for-postgres.sh", "db:5432", "sayfEnnar", "pepper"]
+
 RUN npm run migrate:prod
 
 ENV PORT=7550
