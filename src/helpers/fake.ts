@@ -1,7 +1,6 @@
 import { User, Party, Organizer } from "orms";
 import { Gender, IUser, MatchStatus, OrganizerStatus } from 'models/types';
 import casual from 'casual';
-import sha256 from 'crypto-js/sha256';
 
 casual.define('portrait', () => ({ uri: `https://source.unsplash.com/collection/9948714?${casual.integer(1, 100)}` }));
 casual.define('bar', () => ({ uri: `https://source.unsplash.com/collection/3639161?${casual.integer(1, 20)}` }));
@@ -36,7 +35,7 @@ const createFakeOrganizer = async (password = casual.password as any): Promise<O
   const organizer = await Organizer.create({
     phoneNumber: (casual as unknown as any).phoneNumber,
     userName: casual.username,
-    password: sha256(password).toString(),
+    password: password,
     title: casual.title,
     location: casual.address,
     description: casual.description,
@@ -54,7 +53,7 @@ const createFakePartyWithItsOrganizer = async (): Promise<Party> => {
 
     phoneNumber: (casual as unknown as any).phoneNumber,
     userName: casual.username,
-    password: sha256(casual.password).toString(),
+    password: casual.password,
     title: casual.title,
     location: casual.address,
     description: casual.description,

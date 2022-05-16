@@ -8,12 +8,10 @@ const orms_1 = require("orms");
 const fake_1 = require("helpers/fake");
 const pepperDb_1 = require("orms/pepperDb");
 const jsonwebtoken_1 = (0, tslib_1.__importDefault)(require("jsonwebtoken"));
-const sha256_1 = (0, tslib_1.__importDefault)(require("crypto-js/sha256"));
-const casual_1 = (0, tslib_1.__importDefault)(require("casual"));
 describe('## organizer', () => {
     let organizerObject;
     let organizerObject2;
-    const organizerPassword = casual_1.default.password;
+    const organizerPassword = fake_1.fake.password;
     let organizerToken;
     beforeAll(() => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
         yield (0, pepperDb_1.syncDbModels)();
@@ -26,7 +24,7 @@ describe('## organizer', () => {
             yield (0, supertest_1.default)(index_1.default).post('/api/organizer/login').send({ randomField: 'random' }).expect(http_status_1.default.BAD_REQUEST);
         }));
         test('should NOT be able to login if organizer does not exist', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
-            yield (0, supertest_1.default)(index_1.default).post('/api/organizer/login').send({ userName: 'Test', password: '123456' }).expect(http_status_1.default.UNAUTHORIZED);
+            yield (0, supertest_1.default)(index_1.default).post('/api/organizer/login').send({ userName: 'Test', password: '123456' }).expect(http_status_1.default.NOT_FOUND);
         }));
         test('should be able to subscribe with userName and Password', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
             const organizerInfoTest = {
@@ -42,7 +40,7 @@ describe('## organizer', () => {
             };
             const { token } = (yield (0, supertest_1.default)(index_1.default).put('/api/organizer/login').send(Object.assign({}, organizerInfoTest)).expect(http_status_1.default.OK)).body;
             const subscribedOrganizer = yield orms_1.Organizer.findOne({
-                where: { userName: organizerInfoTest.userName, password: (0, sha256_1.default)(organizerInfoTest.password).toString() },
+                where: { userName: organizerInfoTest.userName, password: organizerInfoTest.password },
                 raw: true
             });
             if (!process.env.JWT_KEY) {
@@ -122,12 +120,12 @@ describe('## organizer', () => {
         }));
         test('Should be able to create new party for organizer', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
             const partyTest = {
-                theme: casual_1.default.title,
-                date: new Date(casual_1.default.date('YYYY-MM-DD')),
-                price: casual_1.default.integer(0, 20),
-                people: casual_1.default.integer(20, 40),
-                minAge: casual_1.default.integer(20, 30),
-                maxAge: casual_1.default.integer(30, 50),
+                theme: fake_1.fake.title,
+                date: new Date(fake_1.fake.date('YYYY-MM-DD')),
+                price: fake_1.fake.integer(0, 20),
+                people: fake_1.fake.integer(20, 40),
+                minAge: fake_1.fake.integer(20, 30),
+                maxAge: fake_1.fake.integer(30, 50),
             };
             const parties = (yield (0, supertest_1.default)(index_1.default).post(`/api/organizer/party`).
                 send(Object.assign({}, partyTest)).
@@ -139,12 +137,12 @@ describe('## organizer', () => {
         }));
         test('Should be able to create delete party for organizer', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
             const partyTest = {
-                theme: casual_1.default.title,
-                date: new Date(casual_1.default.date('YYYY-MM-DD')),
-                price: casual_1.default.integer(0, 20),
-                people: casual_1.default.integer(20, 40),
-                minAge: casual_1.default.integer(20, 30),
-                maxAge: casual_1.default.integer(30, 50),
+                theme: fake_1.fake.title,
+                date: new Date(fake_1.fake.date('YYYY-MM-DD')),
+                price: fake_1.fake.integer(0, 20),
+                people: fake_1.fake.integer(20, 40),
+                minAge: fake_1.fake.integer(20, 30),
+                maxAge: fake_1.fake.integer(30, 50),
             };
             const parties = (yield (0, supertest_1.default)(index_1.default).post(`/api/organizer/party`).
                 send(Object.assign({}, partyTest)).
@@ -153,7 +151,7 @@ describe('## organizer', () => {
             expect(parties.length).toBeGreaterThanOrEqual(1);
             const listLength = parties.length;
             const parties2 = (yield (0, supertest_1.default)(index_1.default).delete(`/api/organizer/party`).
-                send({ id: parties[0].id }).
+                send({ partyId: parties[0].id }).
                 set('Authorization', organizerToken).
                 expect(http_status_1.default.OK)).body.parties;
             expect(parties2.length).toEqual(listLength - 1);

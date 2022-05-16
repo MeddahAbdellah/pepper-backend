@@ -6,7 +6,6 @@ const orms_1 = require("orms");
 const types_1 = require("models/types");
 const casual_1 = (0, tslib_1.__importDefault)(require("casual"));
 exports.fake = casual_1.default;
-const sha256_1 = (0, tslib_1.__importDefault)(require("crypto-js/sha256"));
 casual_1.default.define('portrait', () => ({ uri: `https://source.unsplash.com/collection/9948714?${casual_1.default.integer(1, 100)}` }));
 casual_1.default.define('bar', () => ({ uri: `https://source.unsplash.com/collection/3639161?${casual_1.default.integer(1, 20)}` }));
 casual_1.default.define('gender', () => casual_1.default.boolean ? types_1.Gender.MAN : types_1.Gender.WOMAN);
@@ -25,7 +24,7 @@ const createFakeOrganizer = (password = casual_1.default.password) => (0, tslib_
     const organizer = yield orms_1.Organizer.create({
         phoneNumber: casual_1.default.phoneNumber,
         userName: casual_1.default.username,
-        password: (0, sha256_1.default)(password).toString(),
+        password: password,
         title: casual_1.default.title,
         location: casual_1.default.address,
         description: casual_1.default.description,
@@ -41,7 +40,7 @@ const createFakePartyWithItsOrganizer = () => (0, tslib_1.__awaiter)(void 0, voi
     const organizer = yield orms_1.Organizer.create({
         phoneNumber: casual_1.default.phoneNumber,
         userName: casual_1.default.username,
-        password: (0, sha256_1.default)(casual_1.default.password).toString(),
+        password: casual_1.default.password,
         title: casual_1.default.title,
         location: casual_1.default.address,
         description: casual_1.default.description,
