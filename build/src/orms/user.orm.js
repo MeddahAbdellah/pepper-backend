@@ -50,14 +50,15 @@ const initUser = (sequelize) => {
         },
         address: {
             type: sequelize_1.DataTypes.TEXT,
-            allowNull: false,
+            allowNull: true,
         },
         description: {
             type: sequelize_1.DataTypes.TEXT,
+            allowNull: true,
         },
         job: {
             type: sequelize_1.DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         imgs: {
             type: sequelize_1.DataTypes.JSON,
@@ -65,7 +66,7 @@ const initUser = (sequelize) => {
         },
         interests: {
             type: sequelize_1.DataTypes.JSON,
-            allowNull: false,
+            allowNull: true,
         },
         facebook: {
             type: sequelize_1.DataTypes.TEXT,

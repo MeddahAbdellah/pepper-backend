@@ -138,60 +138,6 @@ describe('## User', () => {
                 const normalizedMatches = (0, user_helper_1.normalizeUserMatches)(userMatches || []);
                 expect(normalizedMatches).toEqual(expect.arrayContaining([Object.assign(Object.assign({}, lodash_1.default.omit(user2, ['createdAt', 'deletedAt', 'updatedAt'])), { status: types_1.MatchStatus.WAITING })]));
             }));
-            test('should find the new match in the second user matches list too', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
-                const userAfterMatch = yield orms_1.User.findOne({ where: { id: user2.id } });
-                const matches = yield (userAfterMatch === null || userAfterMatch === void 0 ? void 0 : userAfterMatch.getMatches({ raw: true }));
-                const normalizedMatches = (0, user_helper_1.normalizeUserMatches)(matches || []);
-                expect(normalizedMatches).toEqual(expect.arrayContaining([Object.assign(Object.assign({}, lodash_1.default.omit(user1, ['createdAt', 'deletedAt', 'updatedAt'])), { status: types_1.MatchStatus.WAITING })]));
-            }));
-            test('should update match for user but NOT for second user if the status is below waiting for the second user and return them', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
-                const user1Matches = (yield (0, supertest_1.default)(index_1.default).put(`/api/user/matches`).
-                    set('Authorization', tokenOfUser1).
-                    send({ matchId: user2.id, status: types_1.MatchStatus.WAITING }).
-                    expect(http_status_1.default.OK)).body.matches;
-                expect(user1Matches).toEqual(expect.arrayContaining([Object.assign(Object.assign({}, lodash_1.default.omit(user2, ['createdAt', 'deletedAt', 'updatedAt'])), { status: types_1.MatchStatus.WAITING })]));
-                const user1AfterMatch = yield orms_1.User.findOne({ where: { id: user1.id } });
-                const user1AfterMatchMatches = yield (user1AfterMatch === null || user1AfterMatch === void 0 ? void 0 : user1AfterMatch.getMatches({ raw: true }));
-                const normalizedUser1Matches = (0, user_helper_1.normalizeUserMatches)(user1AfterMatchMatches || []);
-                expect(normalizedUser1Matches).toEqual(expect.arrayContaining([Object.assign(Object.assign({}, lodash_1.default.omit(user2, ['createdAt', 'deletedAt', 'updatedAt'])), { status: types_1.MatchStatus.WAITING })]));
-                const user2AfterMatch = yield orms_1.User.findOne({ where: { id: user2.id } });
-                const user2AfterMatchMatches = yield (user2AfterMatch === null || user2AfterMatch === void 0 ? void 0 : user2AfterMatch.getMatches({ raw: true }));
-                const normalizedUser2Matches = (0, user_helper_1.normalizeUserMatches)(user2AfterMatchMatches || []);
-                expect(normalizedUser2Matches).toEqual(expect.arrayContaining([Object.assign(Object.assign({}, lodash_1.default.omit(user1, ['createdAt', 'deletedAt', 'updatedAt'])), { status: types_1.MatchStatus.WAITING })]));
-            }));
-            test('should NOT be able to update match for himself', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
-                yield (0, supertest_1.default)(index_1.default).put(`/api/user/matches`).
-                    set('Authorization', tokenOfUser1).
-                    send({ matchId: user1.id, status: types_1.MatchStatus.WAITING }).
-                    expect(http_status_1.default.BAD_REQUEST);
-            }));
-            test('should NOT be able to update match status to ACCEPTED', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
-                yield (0, supertest_1.default)(index_1.default).put(`/api/user/matches`).
-                    set('Authorization', tokenOfUser1).
-                    send({ matchId: user2.id, status: types_1.MatchStatus.ACCEPTED }).
-                    expect(http_status_1.default.BAD_REQUEST);
-            }));
-            test('should NOT be able to update match status to UNCHECKED', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
-                yield (0, supertest_1.default)(index_1.default).put(`/api/user/matches`).
-                    set('Authorization', tokenOfUser1).
-                    send({ matchId: user2.id, status: types_1.MatchStatus.WAITING }).
-                    expect(http_status_1.default.BAD_REQUEST);
-            }));
-            test('should update match for second user AND for first user when the status of the first is waiting and the second is going to be waiting too', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
-                const user2Matches = (yield (0, supertest_1.default)(index_1.default).put(`/api/user/matches`).
-                    set('Authorization', tokenOfUser2).
-                    send({ matchId: user1.id, status: types_1.MatchStatus.WAITING }).
-                    expect(http_status_1.default.OK)).body.matches;
-                expect(user2Matches).toEqual(expect.arrayContaining([Object.assign(Object.assign({}, lodash_1.default.omit(user1, ['createdAt', 'deletedAt', 'updatedAt'])), { status: types_1.MatchStatus.ACCEPTED })]));
-                const user2AfterMatch = yield orms_1.User.findOne({ where: { id: user2.id } });
-                const user2AfterMatchMatches = yield (user2AfterMatch === null || user2AfterMatch === void 0 ? void 0 : user2AfterMatch.getMatches({ raw: true }));
-                const normalizedUser2Matches = (0, user_helper_1.normalizeUserMatches)(user2AfterMatchMatches || []);
-                expect(normalizedUser2Matches).toEqual(expect.arrayContaining([Object.assign(Object.assign({}, lodash_1.default.omit(user1, ['createdAt', 'deletedAt', 'updatedAt'])), { status: types_1.MatchStatus.ACCEPTED })]));
-                const user1AfterMatch = yield orms_1.User.findOne({ where: { id: user1.id } });
-                const user1AfterMatchMatches = yield (user1AfterMatch === null || user1AfterMatch === void 0 ? void 0 : user1AfterMatch.getMatches({ raw: true }));
-                const normalizedUser1Matches = (0, user_helper_1.normalizeUserMatches)(user1AfterMatchMatches || []);
-                expect(normalizedUser1Matches).toEqual(expect.arrayContaining([Object.assign(Object.assign({}, lodash_1.default.omit(user2, ['createdAt', 'deletedAt', 'updatedAt'])), { status: types_1.MatchStatus.ACCEPTED })]));
-            }));
             test('Should be able to delete a match and they should be deleted for the other user too', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
                 const matchesAfterDeletion = (yield (0, supertest_1.default)(index_1.default).delete(`/api/user/matches`).
                     set('Authorization', tokenOfUser1).
