@@ -39,7 +39,12 @@ app.get("/admin", (_req, res) => (0, tslib_1.__awaiter)(void 0, void 0, void 0, 
     const organizers = yield orms_1.Organizer.findAll({ raw: true });
     res.render("admin", { organizers });
 }));
-app.use('/api/', routes_1.default);
+app.get("/privacy-policy", (_req, res) => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+    res.render("privacyPolicy");
+}));
+app.get("/", (_req, res) => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+    res.render("landing");
+}));
 app.get('/health-check/', (_req, res) => res.json({ message: 'up' }));
 if (!envHelper_1.default.isTest()) {
     app.listen(process.env.PORT || 7550, () => {
@@ -48,5 +53,6 @@ if (!envHelper_1.default.isTest()) {
         console.log(`Https server running on port ${process.env.PORT || 7550}`);
     });
 }
+app.use('/api/', routes_1.default);
 exports.default = app;
 //# sourceMappingURL=index.js.map

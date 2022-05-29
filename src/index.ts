@@ -47,8 +47,14 @@ app.get("/admin", async(_req, res) => {
   res.render("admin", { organizers });
 });
 
+app.get("/privacy-policy", async(_req, res) => {
+  res.render("privacyPolicy");
+});
 
-app.use('/api/', routes);
+app.get("/", async(_req, res) => {
+  res.render("landing");
+});
+
 app.get('/health-check/', (_req: any, res: any) => res.json({ message: 'up'}));
 if (!EnvHelper.isTest()) {
   app.listen(process.env.PORT as unknown as number || 7550 ,() => {
@@ -57,5 +63,7 @@ if (!EnvHelper.isTest()) {
     console.log(`Https server running on port ${process.env.PORT as string || 7550}`);
   });
 }
+
+app.use('/api/', routes);
 
 export default app;
