@@ -80,7 +80,7 @@ const createFakePartyWithItsOrganizer = async (): Promise<Party> => {
   return createdParty;
 }
 
-const createFakeParty = async (organizerInfo: IOrganizer): Promise<Party> => {
+const createFakeParty = async (organizerInfo: Organizer | IOrganizer): Promise<Party> => {
 
   const organizer = await Organizer.findOne({ where: { id: organizerInfo.id }, raw: false });
 
