@@ -13,6 +13,7 @@ const user_service_1 = require("services/user/user.service");
 require("dotenv/config");
 const auth_1 = (0, tslib_1.__importDefault)(require("helpers/auth"));
 const sequelize_1 = require("sequelize");
+const moment_1 = (0, tslib_1.__importDefault)(require("moment"));
 ;
 class UserController {
     static createLoginVerificationAndCheckIfUserExisits(req, res) {
@@ -166,8 +167,21 @@ class UserController {
     }
     static attendParty(req, res) {
         return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-            const party = yield orms_1.Party.findOne({ where: { id: req.body.partyId } });
+            const organizer = yield orms_1.Organizer.findOne({ where: { id: req.body.organizerId } });
+            const organizerParties = yield (organizer === null || organizer === void 0 ? void 0 : organizer.getParties({ where: {
+                    date: {
+                        [sequelize_1.Op.gte]: (0, moment_1.default)().startOf('day').toDate(),
+                        [sequelize_1.Op.lte]: (0, moment_1.default)().endOf('day').toDate(),
+                    },
+                },
+            }));
+            if (!organizerParties) {
+                res.status(http_status_1.default.NOT_FOUND);
+                return res.json({ message: 'Party does not exist' });
+            }
             const user = yield orms_1.User.findOne({ where: { id: req.user.id } });
+            console.log('organizerParties', organizerParties);
+            const party = organizerParties[0];
             if (!party || !user) {
                 res.status(http_status_1.default.NOT_FOUND);
                 return res.json({ message: 'Party or User does not exist' });
@@ -265,7 +279,7 @@ class UserController {
 ], UserController, "addParty", null);
 (0, tslib_1.__decorate)([
     (0, helpers_1.validation)(joi_1.default.object({
-        partyId: joi_1.default.number().required(),
+        organizerId: joi_1.default.number().required(),
     }))
 ], UserController, "attendParty", null);
 (0, tslib_1.__decorate)([

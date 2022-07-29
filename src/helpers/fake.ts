@@ -1,6 +1,7 @@
 import { User, Party, Organizer } from "orms";
-import { Gender, IUser, MatchStatus, OrganizerStatus } from 'models/types';
+import { Gender, IOrganizer, IUser, MatchStatus, OrganizerStatus } from 'models/types';
 import casual from 'casual';
+import moment from "moment";
 
 casual.define('portrait', () => ({ uri: `https://source.unsplash.com/collection/9948714?${casual.integer(1, 100)}` }));
 casual.define('bar', () => ({ uri: `https://source.unsplash.com/collection/3639161?${casual.integer(1, 20)}` }));
@@ -50,7 +51,6 @@ const createFakeOrganizer = async (password = casual.password as any): Promise<O
 
 const createFakePartyWithItsOrganizer = async (): Promise<Party> => {
   const organizer = await Organizer.create({
-
     phoneNumber: (casual as unknown as any).phoneNumber,
     userName: casual.username,
     password: casual.password,
@@ -65,31 +65,39 @@ const createFakePartyWithItsOrganizer = async (): Promise<Party> => {
 
   const party = await Party.create({
     theme: casual.title,
-    date: new Date(casual.date('YYYY-MM-DD')),
+    date: moment(),
     price: casual.integer(0, 100),
     people: casual.integer(20, 40),
     minAge: casual.integer(18, 21),
     maxAge: casual.integer(28, 30),
   });
   
-  organizer.addParty(party);
-  return party;
+  await organizer.addParty(party);
+  const createdParty = await Party.findOne({ where: { id: party.id }, raw: false });
+  if (!createdParty) {
+    throw 'Fake party creation failed';
+  }
+  return createdParty;
 }
 
-const createFakeParty = async (organizer: Organizer): Promise<Party> => {
+const createFakeParty = async (organizerInfo: IOrganizer): Promise<Party> => {
 
-  const organizerObject = await Organizer.findOne({ where: { id: organizer.id }, raw: false });
+  const organizer = await Organizer.findOne({ where: { id: organizerInfo.id }, raw: false });
 
   const party = await Party.create({
     theme: casual.title,
-    date: new Date(casual.date('YYYY-MM-DD')),
+    date: moment(),
     price: casual.integer(0, 100),
     people: casual.integer(20, 40),
     minAge: casual.integer(18, 21),
     maxAge: casual.integer(28, 30),
   });
-  await organizerObject?.addParty(party)
-  return party;
+  await organizer?.addParty(party);
+  const createdParty = await Party.findOne({ where: { id: party.id }, raw: false });
+  if (!createdParty) {
+    throw 'Fake party creation failed';
+  }
+  return createdParty;
 }
 
 export { createFakePartyWithItsOrganizer, createFakeUser, createFakeOrganizer, createFakeParty, casual as fake };

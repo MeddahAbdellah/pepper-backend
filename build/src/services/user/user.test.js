@@ -20,6 +20,7 @@ describe('## User', () => {
     let user5;
     let user6;
     let party;
+    let party2;
     beforeAll(() => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
         yield (0, pepperDb_1.syncDbModels)();
         user1 = yield (0, fake_1.createFakeUser)({ gender: types_1.Gender.MAN });
@@ -29,6 +30,7 @@ describe('## User', () => {
         user5 = yield (0, fake_1.createFakeUser)({ gender: types_1.Gender.WOMAN });
         user6 = yield (0, fake_1.createFakeUser)({ gender: types_1.Gender.MAN });
         party = yield (0, fake_1.createFakePartyWithItsOrganizer)();
+        party2 = yield (0, fake_1.createFakePartyWithItsOrganizer)();
     }));
     describe('# Login', () => {
         test('should NOT be able to login if phoneNumber is not provided', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
@@ -219,6 +221,16 @@ describe('## User', () => {
                     set('Authorization', tokenOfUser1).
                     expect(http_status_1.default.OK)).body.parties;
                 expect(lodash_1.default.sortBy(parties[0].attendees.map((attendee) => attendee.id))).toEqual([user1.id, user2.id, user3.id, user4.id, user5.id, user6.id]);
+            }));
+            test('Should be able to attend party using organizerId', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+                console.log('party2', party2);
+                const organizer = yield party2.getOrganizer();
+                console.log('organizer', organizer);
+                const parties = yield (0, supertest_1.default)(index_1.default).put(`/api/user/parties`).
+                    set('Authorization', tokenOfUser1).
+                    send({ organizer: organizer.id }).
+                    expect(http_status_1.default.OK);
+                expect(parties.body.parties.map((currentParty) => currentParty.id)).toEqual([party2.id]);
             }));
         });
     });

@@ -18,7 +18,10 @@ describe('## User', () => {
   let user4: User;
   let user5: User;
   let user6: User;
+  let user7: User;
   let party: Party;
+  let party2: Party;
+
   beforeAll(async () => {
     await syncDbModels();
     user1 = await createFakeUser({ gender: Gender.MAN });
@@ -27,7 +30,9 @@ describe('## User', () => {
     user4 = await createFakeUser({ gender: Gender.WOMAN });
     user5 = await createFakeUser({ gender: Gender.WOMAN });
     user6 = await createFakeUser({ gender: Gender.MAN });
+    user7 = await createFakeUser({ gender: Gender.MAN });
     party = await createFakePartyWithItsOrganizer();
+    party2 = await createFakePartyWithItsOrganizer();
   });
 
   // TODO: mock twilio and test verification
@@ -91,6 +96,7 @@ describe('## User', () => {
     let tokenOfUser4: string;
     let tokenOfUser5: string;
     let tokenOfUser6: string;
+    let tokenOfUser7: string;
 
     beforeAll(async () => {
       const user1Login = (await request(app).post('/api/user/login').send({ phoneNumber: user1.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
@@ -99,12 +105,14 @@ describe('## User', () => {
       const user4Login = (await request(app).post('/api/user/login').send({ phoneNumber: user4.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
       const user5Login = (await request(app).post('/api/user/login').send({ phoneNumber: user5.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
       const user6Login = (await request(app).post('/api/user/login').send({ phoneNumber: user6.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
+      const user7Login = (await request(app).post('/api/user/login').send({ phoneNumber: user7.phoneNumber, code: '123456' }).expect(httpStatus.OK)).body;
       tokenOfUser1 = user1Login.token;
       tokenOfUser2 = user2Login.token;
       tokenOfUser3 = user3Login.token;
       tokenOfUser4 = user4Login.token;
       tokenOfUser5 = user5Login.token;
       tokenOfUser6 = user6Login.token;
+      tokenOfUser7 = user7Login.token;
     });
 
     test('should be able to query info with the right token', async () => {
@@ -263,6 +271,27 @@ describe('## User', () => {
           set('Authorization', tokenOfUser1).
           expect(httpStatus.OK)).body.parties;
         expect(_.sortBy(parties[0].attendees.map((attendee: IUser) => attendee.id))).toEqual([user1.id, user2.id, user3.id, user4.id, user5.id, user6.id]);
+      });
+
+      test('Should NOT be able to attend party using organizerId if user has not been accepted', async() => {
+        const organizer = await party2.getOrganizer();
+        await request(app).put(`/api/user/parties`).
+          set('Authorization', tokenOfUser7).
+          send({ organizerId: organizer.id }).
+          expect(httpStatus.UNAUTHORIZED);
+      });
+
+      test('Should be able to attend party using organizerId', async() => {
+        await request(app).post(`/api/user/parties`).
+          set('Authorization', tokenOfUser7).
+          send({ partyId: party2.id }).
+          expect(httpStatus.OK);
+        const organizer = await party2.getOrganizer();
+        const parties = await request(app).put(`/api/user/parties`).
+          set('Authorization', tokenOfUser7).
+          send({ organizerId: organizer.id }).
+          expect(httpStatus.OK);
+        expect(parties.body.parties.map((currentParty: IParty) => currentParty.id)).toEqual([party2.id]);
       });
     });
   });
