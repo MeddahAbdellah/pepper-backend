@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import Joi from 'joi';
 import { validation } from 'helpers/helpers';
-import { User, Party, UserParty } from 'orms';
+import { User, Party, UserParty, Organizer } from 'orms';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
 import { IUser, Gender, IParty, UserPartyStatus } from 'models/types';
@@ -10,6 +10,7 @@ import { UserService } from 'services/user/user.service';
 import 'dotenv/config';
 import AuthHelper from 'helpers/auth';
 import { Op } from 'sequelize';
+import moment from 'moment';
 
 interface UserRequest extends Request {
   user: User
@@ -221,15 +222,47 @@ export class UserController {
   }
 
   @validation(Joi.object({
-    partyId: Joi.number().required(),
+    organizerId: Joi.number().required(),
   }))
   public static async attendParty(req: UserRequest, res: Response): Promise<Response<{ parties: IParty[] }>> {
-    const party = await Party.findOne({ where: { id: req.body.partyId } });
-    const user = await User.findOne({ where: { id: req.user.id }});
+    const organizer = await Organizer.findOne({ where: { id: req.body.organizerId } });
+    console.log('attendParty organizer', organizer);
 
+    // get today's party
+    const organizerParties = await organizer?.getParties({ where:
+      {
+        // is today
+        date: {
+          [Op.gte]: moment().startOf('day').toDate(),
+          [Op.lte]: moment().endOf('day').toDate(),
+        },
+      },
+    });
+
+    if (!organizerParties) {
+      res.status(httpStatus.NOT_FOUND);
+      return res.json({ message: 'Party does not exist' });
+    }
+    const user = await User.findOne({ where: { id: req.user.id }});
+    const party = organizerParties[0];
     if (!party || !user) {
       res.status(httpStatus.NOT_FOUND);
       return res.json({ message: 'Party or User does not exist' });
+    }
+
+    const hasUserBeenAcceptedToAttend = await UserParty.findOne(
+      { where: { 
+        [Op.and]: [
+          { UserId: user.id },
+          { PartyId: party.id },
+          { status: UserPartyStatus.ACCEPTED },
+        ],
+        },
+      },
+    );
+    if (!hasUserBeenAcceptedToAttend) {
+      res.status(httpStatus.UNAUTHORIZED);
+      return res.json({ message: 'User has not been accepted to attend the party' });
     }
     // TODO: test this logic
     await UserParty.update(

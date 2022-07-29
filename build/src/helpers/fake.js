@@ -57,12 +57,12 @@ const createFakePartyWithItsOrganizer = () => (0, tslib_1.__awaiter)(void 0, voi
         minAge: casual_1.default.integer(18, 21),
         maxAge: casual_1.default.integer(28, 30),
     });
-    organizer.addParty(party);
+    yield organizer.addParty(party);
     return party;
 });
 exports.createFakePartyWithItsOrganizer = createFakePartyWithItsOrganizer;
-const createFakeParty = (organizer) => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
-    const organizerObject = yield orms_1.Organizer.findOne({ where: { id: organizer.id }, raw: false });
+const createFakeParty = (organizerInfo) => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+    const organizer = yield orms_1.Organizer.findOne({ where: { id: organizerInfo.id }, raw: false });
     const party = yield orms_1.Party.create({
         theme: casual_1.default.title,
         date: new Date(casual_1.default.date('YYYY-MM-DD')),
@@ -71,7 +71,7 @@ const createFakeParty = (organizer) => (0, tslib_1.__awaiter)(void 0, void 0, vo
         minAge: casual_1.default.integer(18, 21),
         maxAge: casual_1.default.integer(28, 30),
     });
-    yield (organizerObject === null || organizerObject === void 0 ? void 0 : organizerObject.addParty(party));
+    yield (organizer === null || organizer === void 0 ? void 0 : organizer.addParty(party));
     return party;
 });
 exports.createFakeParty = createFakeParty;
