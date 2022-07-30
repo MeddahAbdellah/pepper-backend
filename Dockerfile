@@ -14,6 +14,6 @@ ENV PORT=7550
 
 EXPOSE 7550
 
-# Needs more ram to build on aws 
+RUN npm run migrate:prod
 
 CMD ["npm", "run", "start"]
