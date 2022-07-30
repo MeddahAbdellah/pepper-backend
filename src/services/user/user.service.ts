@@ -8,14 +8,18 @@ export class UserService {
     const parties = await user.getParties({ attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] } });
     const matches = await user.getMatches({ raw: true });
     const partiesWithOrganizersAndAttendees = await Promise.all(
-      await parties.map(async (currentParty) => {
+      parties.map(async (currentParty) => {
         const organizer = await currentParty.getOrganizer({
           attributes: { exclude: ['status', 'createdAt', 'deletedAt', 'updatedAt'] }
         });
-        const attendeesForThisParty = await currentParty.getUsers({
+        const usersSubscribedToThisParty = await currentParty.getUsers({
           attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] },
           raw: true,
         });
+        // TODO: fix typing
+        const attendeesForThisParty = usersSubscribedToThisParty.filter(
+          (userSubscribedToThisParty) => [UserPartyStatus.ACCEPTED, UserPartyStatus.ATTENDED].includes((userSubscribedToThisParty as unknown as any)['UserParty.status']));
+
         // TODO: test this logic
         const attendeesFilteredByUserMatches = _.filter(attendeesForThisParty, (attendee) => !_.map(matches, (match) => match.id).includes(attendee.id));
         const attendees = _.map(attendeesFilteredByUserMatches, (attendee) => _.omitBy(attendee, (_value, key) => key.includes('UserParty')));
@@ -67,10 +71,20 @@ export class UserService {
       return null;
     }
   }
-  
-  // TODO:  redo this logic properly
-  public static async addParty(user: User, party: Party): Promise<void> {
-    const firstWaitingAttendeeId = (await UserParty.findAll({
+
+  private static async _acceptUser(party: Party, user: User) {
+    await UserParty.update(
+      { status: UserPartyStatus.ACCEPTED },
+      { where: { 
+        [Op.and]: [
+          { UserId: user.id },
+          { PartyId: party.id },
+        ],
+        },
+      },
+    );
+
+    const lastWaitingAttendeeId = (await UserParty.findAll({
       attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] },
       where: {
         status: UserPartyStatus.WAITING,
@@ -78,7 +92,7 @@ export class UserService {
         UserId: { [Op.not]: user.id },
       },
       order: [
-        ['createdAt', 'ASC'],
+        ['updatedAt', 'DESC'],
       ],
       limit: 1,
       raw: true,
@@ -86,6 +100,23 @@ export class UserService {
       // TODO: FIX typing
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as unknown as any)?.UserId;
+
+    if (lastWaitingAttendeeId) {
+      await UserParty.update(
+        { status: UserPartyStatus.ACCEPTED },
+        { where: { 
+          [Op.and]: [
+            { UserId: lastWaitingAttendeeId },
+            { PartyId: party.id },
+          ],
+          },
+        },
+      );
+    }
+  }
+  
+  public static async addParty(user: User, party: Party): Promise<void> {
+    await user.addParty(party);
 
     const lastAcceptedAttendeeId = (await UserParty.findAll({
       attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] },
@@ -95,7 +126,7 @@ export class UserService {
         UserId: { [Op.not]: user.id },
       },
       order: [
-        ['createdAt', 'DESC'],
+        ['updatedAt', 'DESC'],
       ],
       limit: 1,
       raw: true,
@@ -103,53 +134,15 @@ export class UserService {
       // TODO: FIX typing
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as unknown as any)?.UserId;
-    await user.addParty(party);
 
-    const acceptUser = async () => {
-      if (firstWaitingAttendeeId) {
-        await UserParty.update(
-          { status: UserPartyStatus.ACCEPTED },
-          { where: { 
-            [Op.and]: [
-              { UserId: firstWaitingAttendeeId },
-              { PartyId: party.id },
-            ],
-            },
-          },
-        );
-      }
-      
-      await UserParty.update(
-        { status: UserPartyStatus.ACCEPTED },
-        { where: { 
-          [Op.and]: [
-            { UserId: user.id },
-            { PartyId: party.id },
-          ],
-          },
-        },
-      );
-    }
-
-    if (!lastAcceptedAttendeeId) {
-      await acceptUser();
-      return;
-    }
-
-    const lastAcceptedAttendeeGender = (await User.findOne({
+    const lastAcceptedAttendee = lastAcceptedAttendeeId ? await User.findOne({
       attributes: ['gender'],
       where: { id: lastAcceptedAttendeeId },
       raw: true,
-    }))?.gender;
+    }) : null;
 
-    const firstWaitingAttendeeGender = firstWaitingAttendeeId ? (await User.findOne({
-      attributes: ['gender'],
-      where: { id: firstWaitingAttendeeId },
-      raw: true,
-    }))?.gender : null;
-
-    if (user.gender !== lastAcceptedAttendeeGender || user.gender !== firstWaitingAttendeeGender) {
-      await acceptUser();
+    if (!lastAcceptedAttendeeId || (user.gender !== lastAcceptedAttendee?.gender)) {
+      await this._acceptUser(party, user);
     }
   }
 }

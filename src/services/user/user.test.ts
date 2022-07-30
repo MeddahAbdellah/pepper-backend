@@ -21,6 +21,7 @@ describe('## User', () => {
   let user7: User;
   let party: Party;
   let party2: Party;
+  let party3: Party;
 
   beforeAll(async () => {
     await syncDbModels();
@@ -33,6 +34,7 @@ describe('## User', () => {
     user7 = await createFakeUser({ gender: Gender.MAN });
     party = await createFakePartyWithItsOrganizer();
     party2 = await createFakePartyWithItsOrganizer();
+    party3 = await createFakePartyWithItsOrganizer();
   });
 
   // TODO: mock twilio and test verification
@@ -235,42 +237,62 @@ describe('## User', () => {
         expect(AfterAddingParty?.map((currentParty: Party) => currentParty.id)).toEqual([]);
       });
 
-      test('Should be Able to get party attendees', async () => {
+      test('Should maintain gender parity and get parties for user', async() => {
         await request(app).post(`/api/user/parties`).
-          set('Authorization', tokenOfUser1).
-          send({ partyId: party.id }).
+          set('Authorization', tokenOfUser1). // Man
+          send({ partyId: party3.id }).
           expect(httpStatus.OK);
+          await request(app).post(`/api/user/parties`).
+          set('Authorization', tokenOfUser2). // Man
+          send({ partyId: party3.id }).
+          expect(httpStatus.OK);
+        
+        let genderParityParties = (await request(app).get(`/api/user/parties`).
+          set('Authorization', tokenOfUser1).
+          expect(httpStatus.OK)).body.parties.filter((party: IParty) => party.id === party3.id)[0];
+        console.log('genderParityParties', genderParityParties);
+        expect(_.sortBy(genderParityParties.attendees?.map((attendee: IUser) => attendee.id))).toEqual([user1.id]);
+        
         await request(app).post(`/api/user/parties`).
-          set('Authorization', tokenOfUser2).
-          send({ partyId: party.id }).
+          set('Authorization', tokenOfUser3). // Woman
+          send({ partyId: party3.id }).
           expect(httpStatus.OK);
-        const parties = (await request(app).get(`/api/user/parties`).
+        
+        genderParityParties = (await request(app).get(`/api/user/parties`).
           set('Authorization', tokenOfUser1).
-          expect(httpStatus.OK)).body.parties;
-        expect(parties[0].attendees.map((attendee: IUser) => attendee.id)).toEqual([user1.id, user2.id]);
-      });
+          expect(httpStatus.OK)).body.parties.filter((party: IParty) => party.id === party3.id)[0];;
+        expect(_.sortBy(genderParityParties.attendees.map((attendee: IUser) => attendee.id))).toEqual([user1.id, user2.id, user3.id]);
+        
+        
+        await request(app).post(`/api/user/parties`).
+          set('Authorization', tokenOfUser4). // Woman
+          send({ partyId: party3.id }).
+          expect(httpStatus.OK);
 
-      test('Should accept users to keep gender parity', async() => {
-        await request(app).post(`/api/user/parties`).
-          set('Authorization', tokenOfUser3).
-          send({ partyId: party.id }).
-          expect(httpStatus.OK);
-        await request(app).post(`/api/user/parties`).
-          set('Authorization', tokenOfUser4).
-          send({ partyId: party.id }).
-          expect(httpStatus.OK);
-        await request(app).post(`/api/user/parties`).
-          set('Authorization', tokenOfUser5).
-          send({ partyId: party.id }).
-          expect(httpStatus.OK);
-        await request(app).post(`/api/user/parties`).
-          set('Authorization', tokenOfUser6).
-          send({ partyId: party.id }).
-          expect(httpStatus.OK);
-        const parties = (await request(app).get(`/api/user/parties`).
+        genderParityParties = (await request(app).get(`/api/user/parties`).
           set('Authorization', tokenOfUser1).
-          expect(httpStatus.OK)).body.parties;
-        expect(_.sortBy(parties[0].attendees.map((attendee: IUser) => attendee.id))).toEqual([user1.id, user2.id, user3.id, user4.id, user5.id, user6.id]);
+          expect(httpStatus.OK)).body.parties.filter((party: IParty) => party.id === party3.id)[0];;
+        expect(_.sortBy(genderParityParties.attendees.map((attendee: IUser) => attendee.id))).toEqual([user1.id, user2.id, user3.id, user4.id]);
+        
+        await request(app).post(`/api/user/parties`).
+          set('Authorization', tokenOfUser5). // Woman
+          send({ partyId: party3.id }).
+          expect(httpStatus.OK);
+        
+        genderParityParties = (await request(app).get(`/api/user/parties`).
+          set('Authorization', tokenOfUser1).
+          expect(httpStatus.OK)).body.parties.filter((party: IParty) => party.id === party3.id)[0];;
+        expect(_.sortBy(genderParityParties.attendees.map((attendee: IUser) => attendee.id))).toEqual([user1.id, user2.id, user3.id, user4.id]);
+        
+        await request(app).post(`/api/user/parties`).
+          set('Authorization', tokenOfUser6). // Man
+          send({ partyId: party3.id }).
+          expect(httpStatus.OK);
+      
+        genderParityParties = (await request(app).get(`/api/user/parties`).
+          set('Authorization', tokenOfUser1).
+          expect(httpStatus.OK)).body.parties.filter((party: IParty) => party.id === party3.id)[0];;
+        expect(_.sortBy(genderParityParties.attendees.map((attendee: IUser) => attendee.id))).toEqual([user1.id, user2.id, user3.id, user4.id, user5.id, user6.id]);
       });
 
       test('Should NOT be able to attend party using organizerId if user has not been accepted', async() => {

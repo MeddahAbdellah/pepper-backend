@@ -19,8 +19,10 @@ describe('## User', () => {
     let user4;
     let user5;
     let user6;
+    let user7;
     let party;
     let party2;
+    let party3;
     beforeAll(() => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
         yield (0, pepperDb_1.syncDbModels)();
         user1 = yield (0, fake_1.createFakeUser)({ gender: types_1.Gender.MAN });
@@ -29,8 +31,10 @@ describe('## User', () => {
         user4 = yield (0, fake_1.createFakeUser)({ gender: types_1.Gender.WOMAN });
         user5 = yield (0, fake_1.createFakeUser)({ gender: types_1.Gender.WOMAN });
         user6 = yield (0, fake_1.createFakeUser)({ gender: types_1.Gender.MAN });
+        user7 = yield (0, fake_1.createFakeUser)({ gender: types_1.Gender.MAN });
         party = yield (0, fake_1.createFakePartyWithItsOrganizer)();
         party2 = yield (0, fake_1.createFakePartyWithItsOrganizer)();
+        party3 = yield (0, fake_1.createFakePartyWithItsOrganizer)();
     }));
     describe('# Login', () => {
         test('should NOT be able to login if phoneNumber is not provided', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
@@ -82,6 +86,7 @@ describe('## User', () => {
         let tokenOfUser4;
         let tokenOfUser5;
         let tokenOfUser6;
+        let tokenOfUser7;
         beforeAll(() => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
             const user1Login = (yield (0, supertest_1.default)(index_1.default).post('/api/user/login').send({ phoneNumber: user1.phoneNumber, code: '123456' }).expect(http_status_1.default.OK)).body;
             const user2Login = (yield (0, supertest_1.default)(index_1.default).post('/api/user/login').send({ phoneNumber: user2.phoneNumber, code: '123456' }).expect(http_status_1.default.OK)).body;
@@ -89,12 +94,14 @@ describe('## User', () => {
             const user4Login = (yield (0, supertest_1.default)(index_1.default).post('/api/user/login').send({ phoneNumber: user4.phoneNumber, code: '123456' }).expect(http_status_1.default.OK)).body;
             const user5Login = (yield (0, supertest_1.default)(index_1.default).post('/api/user/login').send({ phoneNumber: user5.phoneNumber, code: '123456' }).expect(http_status_1.default.OK)).body;
             const user6Login = (yield (0, supertest_1.default)(index_1.default).post('/api/user/login').send({ phoneNumber: user6.phoneNumber, code: '123456' }).expect(http_status_1.default.OK)).body;
+            const user7Login = (yield (0, supertest_1.default)(index_1.default).post('/api/user/login').send({ phoneNumber: user7.phoneNumber, code: '123456' }).expect(http_status_1.default.OK)).body;
             tokenOfUser1 = user1Login.token;
             tokenOfUser2 = user2Login.token;
             tokenOfUser3 = user3Login.token;
             tokenOfUser4 = user4Login.token;
             tokenOfUser5 = user5Login.token;
             tokenOfUser6 = user6Login.token;
+            tokenOfUser7 = user7Login.token;
         }));
         test('should be able to query info with the right token', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
             const { user } = (yield (0, supertest_1.default)(index_1.default).get(`/api/user/`).
@@ -186,49 +193,74 @@ describe('## User', () => {
                 const AfterAddingParty = yield (userAfterAddingParty === null || userAfterAddingParty === void 0 ? void 0 : userAfterAddingParty.getParties({ raw: true }));
                 expect(AfterAddingParty === null || AfterAddingParty === void 0 ? void 0 : AfterAddingParty.map((currentParty) => currentParty.id)).toEqual([]);
             }));
-            test('Should be Able to get party attendees', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+            test('Should maintain gender parity and get parties for user', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+                var _a;
                 yield (0, supertest_1.default)(index_1.default).post(`/api/user/parties`).
                     set('Authorization', tokenOfUser1).
-                    send({ partyId: party.id }).
+                    send({ partyId: party3.id }).
                     expect(http_status_1.default.OK);
                 yield (0, supertest_1.default)(index_1.default).post(`/api/user/parties`).
                     set('Authorization', tokenOfUser2).
-                    send({ partyId: party.id }).
+                    send({ partyId: party3.id }).
                     expect(http_status_1.default.OK);
-                const parties = (yield (0, supertest_1.default)(index_1.default).get(`/api/user/parties`).
+                let genderParityParties = (yield (0, supertest_1.default)(index_1.default).get(`/api/user/parties`).
                     set('Authorization', tokenOfUser1).
-                    expect(http_status_1.default.OK)).body.parties;
-                expect(parties[0].attendees.map((attendee) => attendee.id)).toEqual([user1.id, user2.id]);
-            }));
-            test('Should accept users to keep gender parity', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+                    expect(http_status_1.default.OK)).body.parties.filter((party) => party.id === party3.id)[0];
+                console.log('genderParityParties', genderParityParties);
+                expect(lodash_1.default.sortBy((_a = genderParityParties.attendees) === null || _a === void 0 ? void 0 : _a.map((attendee) => attendee.id))).toEqual([user1.id]);
                 yield (0, supertest_1.default)(index_1.default).post(`/api/user/parties`).
                     set('Authorization', tokenOfUser3).
-                    send({ partyId: party.id }).
+                    send({ partyId: party3.id }).
                     expect(http_status_1.default.OK);
+                genderParityParties = (yield (0, supertest_1.default)(index_1.default).get(`/api/user/parties`).
+                    set('Authorization', tokenOfUser1).
+                    expect(http_status_1.default.OK)).body.parties.filter((party) => party.id === party3.id)[0];
+                ;
+                expect(lodash_1.default.sortBy(genderParityParties.attendees.map((attendee) => attendee.id))).toEqual([user1.id, user2.id, user3.id]);
                 yield (0, supertest_1.default)(index_1.default).post(`/api/user/parties`).
                     set('Authorization', tokenOfUser4).
-                    send({ partyId: party.id }).
+                    send({ partyId: party3.id }).
                     expect(http_status_1.default.OK);
+                genderParityParties = (yield (0, supertest_1.default)(index_1.default).get(`/api/user/parties`).
+                    set('Authorization', tokenOfUser1).
+                    expect(http_status_1.default.OK)).body.parties.filter((party) => party.id === party3.id)[0];
+                ;
+                expect(lodash_1.default.sortBy(genderParityParties.attendees.map((attendee) => attendee.id))).toEqual([user1.id, user2.id, user3.id, user4.id]);
                 yield (0, supertest_1.default)(index_1.default).post(`/api/user/parties`).
                     set('Authorization', tokenOfUser5).
-                    send({ partyId: party.id }).
+                    send({ partyId: party3.id }).
                     expect(http_status_1.default.OK);
+                genderParityParties = (yield (0, supertest_1.default)(index_1.default).get(`/api/user/parties`).
+                    set('Authorization', tokenOfUser1).
+                    expect(http_status_1.default.OK)).body.parties.filter((party) => party.id === party3.id)[0];
+                ;
+                expect(lodash_1.default.sortBy(genderParityParties.attendees.map((attendee) => attendee.id))).toEqual([user1.id, user2.id, user3.id, user4.id]);
                 yield (0, supertest_1.default)(index_1.default).post(`/api/user/parties`).
                     set('Authorization', tokenOfUser6).
-                    send({ partyId: party.id }).
+                    send({ partyId: party3.id }).
                     expect(http_status_1.default.OK);
-                const parties = (yield (0, supertest_1.default)(index_1.default).get(`/api/user/parties`).
+                genderParityParties = (yield (0, supertest_1.default)(index_1.default).get(`/api/user/parties`).
                     set('Authorization', tokenOfUser1).
-                    expect(http_status_1.default.OK)).body.parties;
-                expect(lodash_1.default.sortBy(parties[0].attendees.map((attendee) => attendee.id))).toEqual([user1.id, user2.id, user3.id, user4.id, user5.id, user6.id]);
+                    expect(http_status_1.default.OK)).body.parties.filter((party) => party.id === party3.id)[0];
+                ;
+                expect(lodash_1.default.sortBy(genderParityParties.attendees.map((attendee) => attendee.id))).toEqual([user1.id, user2.id, user3.id, user4.id, user5.id, user6.id]);
+            }));
+            test('Should NOT be able to attend party using organizerId if user has not been accepted', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+                const organizer = yield party2.getOrganizer();
+                yield (0, supertest_1.default)(index_1.default).put(`/api/user/parties`).
+                    set('Authorization', tokenOfUser7).
+                    send({ organizerId: organizer.id }).
+                    expect(http_status_1.default.UNAUTHORIZED);
             }));
             test('Should be able to attend party using organizerId', () => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
-                console.log('party2', party2);
+                yield (0, supertest_1.default)(index_1.default).post(`/api/user/parties`).
+                    set('Authorization', tokenOfUser7).
+                    send({ partyId: party2.id }).
+                    expect(http_status_1.default.OK);
                 const organizer = yield party2.getOrganizer();
-                console.log('organizer', organizer);
                 const parties = yield (0, supertest_1.default)(index_1.default).put(`/api/user/parties`).
-                    set('Authorization', tokenOfUser1).
-                    send({ organizer: organizer.id }).
+                    set('Authorization', tokenOfUser7).
+                    send({ organizerId: organizer.id }).
                     expect(http_status_1.default.OK);
                 expect(parties.body.parties.map((currentParty) => currentParty.id)).toEqual([party2.id]);
             }));

@@ -6,6 +6,7 @@ const orms_1 = require("orms");
 const types_1 = require("models/types");
 const casual_1 = (0, tslib_1.__importDefault)(require("casual"));
 exports.fake = casual_1.default;
+const moment_1 = (0, tslib_1.__importDefault)(require("moment"));
 casual_1.default.define('portrait', () => ({ uri: `https://source.unsplash.com/collection/9948714?${casual_1.default.integer(1, 100)}` }));
 casual_1.default.define('bar', () => ({ uri: `https://source.unsplash.com/collection/3639161?${casual_1.default.integer(1, 20)}` }));
 casual_1.default.define('gender', () => casual_1.default.boolean ? types_1.Gender.MAN : types_1.Gender.WOMAN);
@@ -51,28 +52,36 @@ const createFakePartyWithItsOrganizer = () => (0, tslib_1.__awaiter)(void 0, voi
     });
     const party = yield orms_1.Party.create({
         theme: casual_1.default.title,
-        date: new Date(casual_1.default.date('YYYY-MM-DD')),
+        date: (0, moment_1.default)(),
         price: casual_1.default.integer(0, 100),
         people: casual_1.default.integer(20, 40),
         minAge: casual_1.default.integer(18, 21),
         maxAge: casual_1.default.integer(28, 30),
     });
     yield organizer.addParty(party);
-    return party;
+    const createdParty = yield orms_1.Party.findOne({ where: { id: party.id }, raw: false });
+    if (!createdParty) {
+        throw 'Fake party creation failed';
+    }
+    return createdParty;
 });
 exports.createFakePartyWithItsOrganizer = createFakePartyWithItsOrganizer;
 const createFakeParty = (organizerInfo) => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
     const organizer = yield orms_1.Organizer.findOne({ where: { id: organizerInfo.id }, raw: false });
     const party = yield orms_1.Party.create({
         theme: casual_1.default.title,
-        date: new Date(casual_1.default.date('YYYY-MM-DD')),
+        date: (0, moment_1.default)(),
         price: casual_1.default.integer(0, 100),
         people: casual_1.default.integer(20, 40),
         minAge: casual_1.default.integer(18, 21),
         maxAge: casual_1.default.integer(28, 30),
     });
     yield (organizer === null || organizer === void 0 ? void 0 : organizer.addParty(party));
-    return party;
+    const createdParty = yield orms_1.Party.findOne({ where: { id: party.id }, raw: false });
+    if (!createdParty) {
+        throw 'Fake party creation failed';
+    }
+    return createdParty;
 });
 exports.createFakeParty = createFakeParty;
 //# sourceMappingURL=fake.js.map
