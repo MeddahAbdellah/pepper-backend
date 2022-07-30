@@ -180,11 +180,22 @@ class UserController {
                 return res.json({ message: 'Party does not exist' });
             }
             const user = yield orms_1.User.findOne({ where: { id: req.user.id } });
-            console.log('organizerParties', organizerParties);
             const party = organizerParties[0];
             if (!party || !user) {
                 res.status(http_status_1.default.NOT_FOUND);
                 return res.json({ message: 'Party or User does not exist' });
+            }
+            const hasUserBeenAcceptedToAttend = yield orms_1.UserParty.findOne({ where: {
+                    [sequelize_1.Op.and]: [
+                        { UserId: user.id },
+                        { PartyId: party.id },
+                        { status: types_1.UserPartyStatus.ACCEPTED },
+                    ],
+                },
+            });
+            if (!hasUserBeenAcceptedToAttend) {
+                res.status(http_status_1.default.UNAUTHORIZED);
+                return res.json({ message: 'User has not been accepted to attend the party' });
             }
             yield orms_1.UserParty.update({ status: types_1.UserPartyStatus.ATTENDED }, { where: {
                     [sequelize_1.Op.and]: [

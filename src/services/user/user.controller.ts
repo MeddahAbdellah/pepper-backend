@@ -226,7 +226,6 @@ export class UserController {
   }))
   public static async attendParty(req: UserRequest, res: Response): Promise<Response<{ parties: IParty[] }>> {
     const organizer = await Organizer.findOne({ where: { id: req.body.organizerId } });
-    console.log('attendParty organizer', organizer);
 
     // get today's party
     const organizerParties = await organizer?.getParties({ where:

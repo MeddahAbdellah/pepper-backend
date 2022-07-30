@@ -12,14 +12,15 @@ class UserService {
         return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             const parties = yield user.getParties({ attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] } });
             const matches = yield user.getMatches({ raw: true });
-            const partiesWithOrganizersAndAttendees = yield Promise.all(yield parties.map((currentParty) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            const partiesWithOrganizersAndAttendees = yield Promise.all(parties.map((currentParty) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                 const organizer = yield currentParty.getOrganizer({
                     attributes: { exclude: ['status', 'createdAt', 'deletedAt', 'updatedAt'] }
                 });
-                const attendeesForThisParty = yield currentParty.getUsers({
+                const usersSubscribedToThisParty = yield currentParty.getUsers({
                     attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] },
                     raw: true,
                 });
+                const attendeesForThisParty = usersSubscribedToThisParty.filter((userSubscribedToThisParty) => [types_1.UserPartyStatus.ACCEPTED, types_1.UserPartyStatus.ATTENDED].includes(userSubscribedToThisParty['UserParty.status']));
                 const attendeesFilteredByUserMatches = lodash_1.default.filter(attendeesForThisParty, (attendee) => !lodash_1.default.map(matches, (match) => match.id).includes(attendee.id));
                 const attendees = lodash_1.default.map(attendeesFilteredByUserMatches, (attendee) => lodash_1.default.omitBy(attendee, (_value, key) => key.includes('UserParty')));
                 const plainParty = currentParty.get({ plain: true });
@@ -69,10 +70,17 @@ class UserService {
             }
         });
     }
-    static addParty(user, party) {
-        var _a, _b, _c, _d;
+    static _acceptUser(party, user) {
+        var _a;
         return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-            const firstWaitingAttendeeId = (_a = (yield orms_1.UserParty.findAll({
+            yield orms_1.UserParty.update({ status: types_1.UserPartyStatus.ACCEPTED }, { where: {
+                    [sequelize_1.Op.and]: [
+                        { UserId: user.id },
+                        { PartyId: party.id },
+                    ],
+                },
+            });
+            const lastWaitingAttendeeId = (_a = (yield orms_1.UserParty.findAll({
                 attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] },
                 where: {
                     status: types_1.UserPartyStatus.WAITING,
@@ -80,13 +88,28 @@ class UserService {
                     UserId: { [sequelize_1.Op.not]: user.id },
                 },
                 order: [
-                    ['createdAt', 'ASC'],
+                    ['updatedAt', 'DESC'],
                 ],
                 limit: 1,
                 raw: true,
                 plain: true,
             }))) === null || _a === void 0 ? void 0 : _a.UserId;
-            const lastAcceptedAttendeeId = (_b = (yield orms_1.UserParty.findAll({
+            if (lastWaitingAttendeeId) {
+                yield orms_1.UserParty.update({ status: types_1.UserPartyStatus.ACCEPTED }, { where: {
+                        [sequelize_1.Op.and]: [
+                            { UserId: lastWaitingAttendeeId },
+                            { PartyId: party.id },
+                        ],
+                    },
+                });
+            }
+        });
+    }
+    static addParty(user, party) {
+        var _a;
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            yield user.addParty(party);
+            const lastAcceptedAttendeeId = (_a = (yield orms_1.UserParty.findAll({
                 attributes: { exclude: ['createdAt', 'deletedAt', 'updatedAt'] },
                 where: {
                     status: types_1.UserPartyStatus.ACCEPTED,
@@ -94,47 +117,19 @@ class UserService {
                     UserId: { [sequelize_1.Op.not]: user.id },
                 },
                 order: [
-                    ['createdAt', 'DESC'],
+                    ['updatedAt', 'DESC'],
                 ],
                 limit: 1,
                 raw: true,
                 plain: true,
-            }))) === null || _b === void 0 ? void 0 : _b.UserId;
-            yield user.addParty(party);
-            const acceptUser = () => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-                if (firstWaitingAttendeeId) {
-                    yield orms_1.UserParty.update({ status: types_1.UserPartyStatus.ACCEPTED }, { where: {
-                            [sequelize_1.Op.and]: [
-                                { UserId: firstWaitingAttendeeId },
-                                { PartyId: party.id },
-                            ],
-                        },
-                    });
-                }
-                yield orms_1.UserParty.update({ status: types_1.UserPartyStatus.ACCEPTED }, { where: {
-                        [sequelize_1.Op.and]: [
-                            { UserId: user.id },
-                            { PartyId: party.id },
-                        ],
-                    },
-                });
-            });
-            if (!lastAcceptedAttendeeId) {
-                yield acceptUser();
-                return;
-            }
-            const lastAcceptedAttendeeGender = (_c = (yield orms_1.User.findOne({
+            }))) === null || _a === void 0 ? void 0 : _a.UserId;
+            const lastAcceptedAttendee = lastAcceptedAttendeeId ? yield orms_1.User.findOne({
                 attributes: ['gender'],
                 where: { id: lastAcceptedAttendeeId },
                 raw: true,
-            }))) === null || _c === void 0 ? void 0 : _c.gender;
-            const firstWaitingAttendeeGender = firstWaitingAttendeeId ? (_d = (yield orms_1.User.findOne({
-                attributes: ['gender'],
-                where: { id: firstWaitingAttendeeId },
-                raw: true,
-            }))) === null || _d === void 0 ? void 0 : _d.gender : null;
-            if (user.gender !== lastAcceptedAttendeeGender || user.gender !== firstWaitingAttendeeGender) {
-                yield acceptUser();
+            }) : null;
+            if (!lastAcceptedAttendeeId || (user.gender !== (lastAcceptedAttendee === null || lastAcceptedAttendee === void 0 ? void 0 : lastAcceptedAttendee.gender))) {
+                yield this._acceptUser(party, user);
             }
         });
     }
