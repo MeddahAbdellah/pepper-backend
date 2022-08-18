@@ -14,11 +14,12 @@ enum TwilioVerificationStatus {
 const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const localCode = '123456';
 const twilioChannel = 'sms';
+const specialPhoneNumberForGooglePlayTesting = '0700000000';
 
 export default class AuthHelper {
 
   public static async createVerification(phoneNumber: string, countryPrefix = '+33'): Promise<void> {
-    if (EnvHelper.isLocal() || EnvHelper.isTest()) {
+    if (EnvHelper.isLocal() || EnvHelper.isTest() || phoneNumber === specialPhoneNumberForGooglePlayTesting) {
       return;
     }
 
@@ -33,7 +34,7 @@ export default class AuthHelper {
   }
 
   public static async checkVerification(phoneNumber: string, code: string, countryPrefix = '+33'): Promise<boolean> {
-    if (EnvHelper.isLocal() || EnvHelper.isTest()) {
+    if (EnvHelper.isLocal() || EnvHelper.isTest() || phoneNumber === specialPhoneNumberForGooglePlayTesting) {
       return code === localCode;
     }
 

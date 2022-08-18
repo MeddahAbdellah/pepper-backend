@@ -15,10 +15,11 @@ var TwilioVerificationStatus;
 const twilioClient = (0, twilio_1.default)(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const localCode = '123456';
 const twilioChannel = 'sms';
+const specialPhoneNumberForGooglePlayTesting = '0700000000';
 class AuthHelper {
     static createVerification(phoneNumber, countryPrefix = '+33') {
         return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-            if (envHelper_1.default.isLocal() || envHelper_1.default.isTest()) {
+            if (envHelper_1.default.isLocal() || envHelper_1.default.isTest() || phoneNumber === specialPhoneNumberForGooglePlayTesting) {
                 return;
             }
             if (!process.env.TWILIO_SERVICE_ID) {
@@ -32,7 +33,7 @@ class AuthHelper {
     }
     static checkVerification(phoneNumber, code, countryPrefix = '+33') {
         return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-            if (envHelper_1.default.isLocal() || envHelper_1.default.isTest()) {
+            if (envHelper_1.default.isLocal() || envHelper_1.default.isTest() || phoneNumber === specialPhoneNumberForGooglePlayTesting) {
                 return code === localCode;
             }
             if (!process.env.TWILIO_SERVICE_ID) {

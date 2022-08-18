@@ -14,6 +14,7 @@ ENV PORT=7550
 
 EXPOSE 7550
 
-RUN npm run migrate:prod
+## TODO: fix migrations
+## RUN npm run migrate:prod
 
 CMD ["npm", "run", "start"]
